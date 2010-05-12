@@ -12,6 +12,7 @@
 #include <unistd.h>
 #include <stdarg.h>
 #include <getopt.h>
+#include <link.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 
@@ -72,8 +73,8 @@ uint getOpcode(uint uiOptype, const char *pData, struct op** stOp)
   return 0;
 }
 
-// isValidOpcodeR();
-// Returns true if pData ptr is at end of the intruction
+// getOpcodeR();
+// Returns >0 if pData ptr is at end of the intruction
 // Iterates backwards to see if current data ptr is at the end of
 // valid instruction opcodes
 uint getOpcodeR(uint uiOptype, const char *pData, struct op** stOp)
@@ -94,6 +95,20 @@ uint getOpcodeR(uint uiOptype, const char *pData, struct op** stOp)
     }
   }
   stOp = 0;
+  return 0;
+}
+
+// getLibAddr();
+// Aux func to find address of libc lib
+int getLibAddr(struct dl_phdr_info *info, size_t size, void *data)
+{
+  if(strstr(info->dlpi_name, "libc"))
+  {
+    g_pLibAddr = (void*)info->dlpi_addr;
+    g_szLibPath = malloc(strlen(info->dlpi_name) + 1);
+    strcpy(g_szLibPath, info->dlpi_name);
+    return 1;
+  }
   return 0;
 }
 
@@ -176,8 +191,24 @@ uint findJmpCall(void *pData, uint uiLen)
   return uiCount;
 }
 
+uint findChunk(void *pData, uint uiLen)
+{
+  uint uiCount = 0;
+
+  if(0 > dl_iterate_phdr(getLibAddr, NULL))
+  {
+    printf("[-] Could not locate libc library!\n");
+    return 0;
+  }
+
+  printf("[+] LIBC lib @ %p\n", g_pLibAddr);
+  printf("[+] LIBC path: %s\n", g_szLibPath);    
+
+  return uiCount;
+}
+
+
 uint findReg(void *pData, uint uiLen);
-uint findChunk(void *pData, uint uiLen);
 
 // entry point of findjmp3
 int main(int argc, char *argv[])
@@ -329,6 +360,7 @@ int main(int argc, char *argv[])
   {
     printf("[+] Searching for chunks for ROP.. c3 c3 c3\n");
     printf("------------------------------------------\n");
+    findChunk(pFileData, uiFileSize);
     printf("------------------------------------------\n");
   }
 

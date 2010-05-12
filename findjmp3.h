@@ -35,6 +35,15 @@ struct op
   uchar *label;
 };
 
+struct dl_phdr_info
+{
+    Elf32_Addr dlpi_addr;
+    const char *dlpi_name;
+    const Elf32_Phdr *dlpi_phdr;
+    Elf32_Half dlpi_phnum;
+};
+
+
 #include "opcodes_x86.h"
 //#include "opcodes_x64.h"
 //#include "opcodes_arm7.h"
@@ -64,5 +73,8 @@ uint findChunk(void *pData, uint uiLen);
 uint findJmpCall(void *pData, uint uiLen);
 
 uint opcount = sizeof(opcodes) / sizeof(struct op);
+
+void *g_pLibAddr;
+char *g_szLibPath;
 
 #endif
