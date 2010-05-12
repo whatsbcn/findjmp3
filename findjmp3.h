@@ -50,6 +50,7 @@ struct dl_phdr_info
 //#include "opcodes_mips.h"
 
 #define HEAP_BASEADDR  0x8048000
+#define LIBC_SIZE 0x13E000
 
 /* Search modes */
 #define MODE_STACKJUG  0x1
@@ -69,7 +70,7 @@ void getCPUInfo(uint *uiCPUID, char *szCPUID);
 uint findJug(void *pData, uint uiLen);
 uint findJmpCall(void *pData, uint uiLen);
 uint findReg(void *pData, uint uiLen);
-uint findChunk(void *pData, uint uiLen);
+uint findChunk();
 uint findJmpCall(void *pData, uint uiLen);
 
 uint opcount = sizeof(opcodes) / sizeof(struct op);

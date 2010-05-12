@@ -191,9 +191,16 @@ uint findJmpCall(void *pData, uint uiLen)
   return uiCount;
 }
 
-uint findChunk(void *pData, uint uiLen)
+uint findChunk()
 {
   uint uiCount = 0;
+  uint uiLen = LIBC_SIZE;
+  uint i;
+
+  void* pAddr;
+
+  struct op* stOpRet;
+  struct op* stOpPrev;
 
   if(0 > dl_iterate_phdr(getLibAddr, NULL))
   {
@@ -201,8 +208,18 @@ uint findChunk(void *pData, uint uiLen)
     return 0;
   }
 
+  pAddr = g_pLibAddr;
+
   printf("[+] LIBC lib @ %p\n", g_pLibAddr);
   printf("[+] LIBC path: %s\n", g_szLibPath);    
+
+  for(i = 0; i < uiLen; i++)
+  {
+    if(getOpcode(OPTYPE_RET, pAddr+i, &stOpRet))
+    {
+      printf(" - [%s] @ %p\n", stOpRet->label, g_pLibAddr + i);
+    }
+  }
 
   return uiCount;
 }
@@ -244,10 +261,10 @@ int main(int argc, char *argv[])
 	  return -1;
   }
 
-//  printf("[+] Num of opcodes: jmp=%d, call=%d, push=%d, pop=%d, ret=%d\n",
- //   g_jmp_count, g_call_count, g_push_count, g_pop_count, g_ret_count);
+  //printf("[+] Num of opcodes: jmp=%d, call=%d, push=%d, pop=%d, ret=%d\n",
+  //  g_jmp_count, g_call_count, g_push_count, g_pop_count, g_ret_count);
 
-  printf("[+] Num of opcodes registered: %d\n", opcount);
+  //printf("[+] Num of opcodes registered: %d\n", opcount);
   
   getCPUInfo(&uiCPUID, (char*)&szCPUName);
   printf("[+] CPU: %s (type:0x%x)\n", szCPUName, uiCPUID);
@@ -360,7 +377,7 @@ int main(int argc, char *argv[])
   {
     printf("[+] Searching for chunks for ROP.. c3 c3 c3\n");
     printf("------------------------------------------\n");
-    findChunk(pFileData, uiFileSize);
+    findChunk();
     printf("------------------------------------------\n");
   }
 
