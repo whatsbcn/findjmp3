@@ -27,6 +27,14 @@
 #define OPTYPE_REG_ESP    0xc
 #define OPTYPE_REG_EBP    0xd
 
+struct op
+{
+  uchar optype;
+  uchar *codes;
+  uint size;
+  uchar *label;
+};
+
 #include "opcodes_x86.h"
 //#include "opcodes_x64.h"
 //#include "opcodes_arm7.h"
@@ -42,8 +50,8 @@
 ;
 
 /* Mini-helper functions */
-bool isValidOpcode(uint uiOptype, const char *pData);
-bool isValidOpcodeR(uint uiOptype, const char *pData);
+uint getOpcode(uint uiOptype, const char *pData, struct op **stOp);
+uint getOpcodeR(uint uiOptype, const char *pData, struct op **stOp);
 
 /* Function prototypes */
 void putHelp();

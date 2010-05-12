@@ -53,15 +53,22 @@ void putHelp()
 // isValidOpcode();
 // Returns true if pData ptr is at ret instruction
 // Iterates to see if current data ptr is at ret-equivalent instructions
-uint isValidOpcode(uint uiOptype, const char *pData)
+uint getOpcode(uint uiOptype, const char *pData, struct op** stOp)
 {
   uint i;
 
   for(i = 0; i < opcount; i++)
+  {
     if(uiOptype == opcodes[i].optype)
+    {
       if(0 == memcmp(pData, opcodes[i].codes, opcodes[i].size))
+      {
+        *stOp = &opcodes[i];
         return opcodes[i].size;
-
+      }
+    }
+  }
+  stOp = 0;
   return 0;
 }
 
@@ -69,15 +76,24 @@ uint isValidOpcode(uint uiOptype, const char *pData)
 // Returns true if pData ptr is at end of the intruction
 // Iterates backwards to see if current data ptr is at the end of
 // valid instruction opcodes
-uint isValidOpcodeR(uint uiOptype, const char *pData)
+uint getOpcodeR(uint uiOptype, const char *pData, struct op** stOp)
 {
   uint i;
+  uint uiLen;
 
   for(i = 0; i < opcount; i++)
+  {
     if(uiOptype == opcodes[i].optype)
-      if(0 == memcmp(pData - (opcodes[i].size-1), opcodes[i].codes, opcodes[i].size))
+    {
+      uiLen = opcodes[i].size;
+      if(0 == memcmp(pData-(uiLen-1), opcodes[i].codes, uiLen))
+      {
+        *stOp = &opcodes[i];
         return opcodes[i].size;
-
+      }
+    }
+  }
+  stOp = 0;
   return 0;
 }
 
@@ -95,32 +111,37 @@ uint findJug(void *pData, uint uiLen)
   bool bIsUseful;
   void *pAddr;
 
+  struct op *stOpPrev;
+  struct op *stOpRet;
+
+
   for(i = 0; i < uiLen; i++)
   {
-    if(true == isValidOpcode(OPTYPE_RET, pData+i))
+    if(getOpcode(OPTYPE_RET, pData+i, &stOpRet))
     {
       // save the addr for being ret
       pAddr = pData + i;
-      printf("[*] ");
+      //printf("[*] %p: ", HEAP_BASEADDR + i);
+
+      printf(" - ");
 
       // look for repeated pop || ret (later + more add, sub, pushad, ..)
       while(1)
       {
-        if((r = isValidOpcodeR(OPTYPE_POP, pAddr-1)))
+        if(getOpcodeR(OPTYPE_POP, pAddr-1, &stOpPrev))
         {
-          pAddr -= r;
-          printf("pop ");
+          pAddr -= stOpPrev->size;
+          printf("[%s] ", stOpPrev->label);
         }
-        else if((r = isValidOpcodeR(OPTYPE_PUSH, pAddr-1)))
+        else if(getOpcodeR(OPTYPE_PUSH, pAddr-1, &stOpPrev))
         {
-          pAddr -= r;
-          printf("push ");
+          pAddr -= stOpPrev->size;
+          printf("[%s] ", stOpPrev->label);
         }
         else
           break;
       }
-
-      printf("ret @ %p\n", HEAP_BASEADDR + (pAddr-pData));
+      printf("[%s] @ %p\n", stOpRet->label, HEAP_BASEADDR + (pAddr - pData));
     }
   }
 
@@ -136,17 +157,19 @@ uint findJmpCall(void *pData, uint uiLen)
 
   void *pAddr;
 
+  struct op* stOp;
+
   for(i = 0; i < uiLen; i++)
   {
-    if(isValidOpcode(OPTYPE_JMP, pData+i))
+    if(getOpcode(OPTYPE_JMP, pData+i, &stOp))
     {
       pAddr = pData + i;
-      printf("[*] jmp @ %p\n", HEAP_BASEADDR + i);
+      printf(" - [%s] @ %p\n", stOp->label, HEAP_BASEADDR + i);
     }
-    else if(isValidOpcode(OPTYPE_CALL, pData+i))
+    else if(getOpcode(OPTYPE_CALL, pData+i, &stOp))
     {
       pAddr = pData + i;
-      printf("[*] call @ %p\n", HEAP_BASEADDR + i);
+      printf(" - [%s] @ %p\n", stOp->label, HEAP_BASEADDR + i);
     }
   }
 
