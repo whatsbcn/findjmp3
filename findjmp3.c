@@ -157,6 +157,7 @@ uint findJug(void *pData, uint uiLen)
           break;
       }
       printf("[%s] @ %p\n", stOpRet->label, HEAP_BASEADDR + (pAddr - pData));
+      uiCount++;
     }
   }
 
@@ -180,11 +181,13 @@ uint findJmpCall(void *pData, uint uiLen)
     {
       pAddr = pData + i;
       printf(" - [%s] @ %p\n", stOp->label, HEAP_BASEADDR + i);
+      uiCount++;
     }
     else if(getOpcode(OPTYPE_CALL, pData+i, &stOp))
     {
       pAddr = pData + i;
       printf(" - [%s] @ %p\n", stOp->label, HEAP_BASEADDR + i);
+      uiCount++;
     }
   }
 
@@ -218,7 +221,11 @@ uint findChunk()
     if(getOpcode(OPTYPE_RET, pAddr+i, &stOpRet))
     {
       printf(" - [%s] @ %p\n", stOpRet->label, g_pLibAddr + i);
+      uiCount++;
     }
+
+    if(uiCount > 10)
+      return uiCount;
   }
 
   return uiCount;
