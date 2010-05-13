@@ -54,7 +54,7 @@ void putHelp()
 // match();
 // Matches two data with length, supports wildcard with '*'
 // If there is wild card, returns a pointer to operands
-uint match(uchar *pData, struct op *stOp, uchar *offset)
+int match(uchar *pData, struct op *stOp, uchar *offset)
 {
   uint uiWildCount = 0;
   uint uiCount = 0;
@@ -95,7 +95,7 @@ uint match(uchar *pData, struct op *stOp, uchar *offset)
 // getOpcode();
 // Returns true if pData ptr is at some instruction
 // Iterates to see if current data ptr is at ret-equivalent instructions
-uint getOpcode(uint uiOptype, uchar *pData, struct op** stOp)
+int getOpcode(uint uiOptype, uchar *pData, struct op** stOp)
 {
   uint i;
 
@@ -103,6 +103,7 @@ uint getOpcode(uint uiOptype, uchar *pData, struct op** stOp)
   {
     if(uiOptype == opcodes[i].optype)
     {
+//      if(0 != me
       if(0 == memcmp(pData, opcodes[i].codes, opcodes[i].size))
       {
         *stOp = &opcodes[i];
@@ -118,7 +119,7 @@ uint getOpcode(uint uiOptype, uchar *pData, struct op** stOp)
 // Returns >0 if pData ptr is at end of the intruction
 // Iterates backwards to see if current data ptr is at the end of
 // valid instruction opcodes
-uint getOpcodeR(uint uiOptype, uchar *pData, struct op** stOp)
+int getOpcodeR(uint uiOptype, uchar *pData, struct op** stOp)
 {
   uint i;
   uint uiLen;
@@ -157,7 +158,7 @@ int getLibAddr(struct dl_phdr_info *info, size_t size, void *data)
 // Search Stack Jugglers
 // * stack jugglers are to be defined to be any (pop || push)* && ret
 // * better to find c3 first (then backward) than to find (pop || push) first
-uint findJug(uchar *pData, uint uiLen)
+int findJug(uchar *pData, uint uiLen)
 {
   uint uiCount = 0;
   uint i;
@@ -207,7 +208,7 @@ uint findJug(uchar *pData, uint uiLen)
 }
 
 // Search jmp & call
-uint findJmpCall(uchar *pData, uint uiLen)
+int findJmpCall(uchar *pData, uint uiLen)
 {
   uint uiCount = 0;
   uint i;
@@ -237,7 +238,7 @@ uint findJmpCall(uchar *pData, uint uiLen)
 }
 
 // Search c3 chunks for ROP
-uint findChunk()
+int findChunk()
 {
   uint uiCount = 0;
   uint uiLen = LIBC_SIZE;
@@ -275,7 +276,7 @@ uint findChunk()
 }
 
 
-uint findReg(uchar *pData, uint uiLen);
+int findReg(uchar *pData, uint uiLen);
 
 // entry point of findjmp3
 int main(int argc, char *argv[])

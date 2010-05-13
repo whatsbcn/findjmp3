@@ -61,19 +61,19 @@ struct dl_phdr_info
 ;
 
 /* Mini-helper functions */
-uint match(uchar *pData, struct op *stOp, uchar *offset);
-uint getOpcode(uint uiOptype, uchar *pData, struct op **stOp);
-uint getOpcodeR(uint uiOptype, uchar *pData, struct op **stOp);
+int match(uchar *pData, struct op *stOp, uchar *offset);
+int getOpcode(uint uiOptype, uchar *pData, struct op **stOp);
+int getOpcodeR(uint uiOptype, uchar *pData, struct op **stOp);
 
 /* Function prototypes */
 void putHelp();
 void getCPUInfo(uint *uiCPUID, char *szCPUID);
 
-uint findJug(uchar *pData, uint uiLen);
-uint findJmpCall(uchar *pData, uint uiLen);
-uint findReg(uchar *pData, uint uiLen);
-uint findChunk();
-uint findJmpCall(uchar *pData, uint uiLen);
+int findJug(uchar *pData, uint uiLen);
+int findJmpCall(uchar *pData, uint uiLen);
+int findReg(uchar *pData, uint uiLen);
+int findChunk();
+int findJmpCall(uchar *pData, uint uiLen);
 
 uint opcount = sizeof(opcodes) / sizeof(struct op);
 
