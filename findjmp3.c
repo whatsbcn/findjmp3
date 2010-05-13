@@ -51,10 +51,51 @@ void putHelp()
 
 /* Mini-helper functions */
 
-// isValidOpcode();
-// Returns true if pData ptr is at ret instruction
+// match();
+// Matches two data with length, supports wildcard with '*'
+// If there is wild card, returns a pointer to operands
+uint match(uchar *pData, struct op *stOp, uchar *offset)
+{
+  uint uiWildCount = 0;
+  uint uiCount = 0;
+  uint i;
+  bool bState = false;
+
+  for(i = 0; i < stOp->size; i++)
+  {
+    if('*' == stOp->codes[i])
+    {
+      uiCount++;
+      continue;
+    }
+
+    // if not wild card, and match, increase count
+    if(stOp->codes[i] == (char)pData[i])
+    {
+      uiCount++;
+    }
+    // if wild card, increase count
+    else if('*' == stOp->codes[i])
+    {
+      uiCount++;
+    }
+    // if byte != byte (does not match)
+    else
+    {
+      return 0;
+    }
+  }
+
+  if(uiCount == stOp->size)
+    return uiCount;
+
+  return 0;
+}
+
+// getOpcode();
+// Returns true if pData ptr is at some instruction
 // Iterates to see if current data ptr is at ret-equivalent instructions
-uint getOpcode(uint uiOptype, const char *pData, struct op** stOp)
+uint getOpcode(uint uiOptype, uchar *pData, struct op** stOp)
 {
   uint i;
 
@@ -77,7 +118,7 @@ uint getOpcode(uint uiOptype, const char *pData, struct op** stOp)
 // Returns >0 if pData ptr is at end of the intruction
 // Iterates backwards to see if current data ptr is at the end of
 // valid instruction opcodes
-uint getOpcodeR(uint uiOptype, const char *pData, struct op** stOp)
+uint getOpcodeR(uint uiOptype, uchar *pData, struct op** stOp)
 {
   uint i;
   uint uiLen;
@@ -90,7 +131,7 @@ uint getOpcodeR(uint uiOptype, const char *pData, struct op** stOp)
       if(0 == memcmp(pData-(uiLen-1), opcodes[i].codes, uiLen))
       {
         *stOp = &opcodes[i];
-        return opcodes[i].size;
+        return uiLen;
       }
     }
   }
@@ -116,7 +157,7 @@ int getLibAddr(struct dl_phdr_info *info, size_t size, void *data)
 // Search Stack Jugglers
 // * stack jugglers are to be defined to be any (pop || push)* && ret
 // * better to find c3 first (then backward) than to find (pop || push) first
-uint findJug(void *pData, uint uiLen)
+uint findJug(uchar *pData, uint uiLen)
 {
   uint uiCount = 0;
   uint i;
@@ -124,7 +165,7 @@ uint findJug(void *pData, uint uiLen)
   
   char **jugs;
   bool bIsUseful;
-  void *pAddr;
+  uchar *pAddr;
 
   struct op *stOpPrev;
   struct op *stOpRet;
@@ -156,6 +197,7 @@ uint findJug(void *pData, uint uiLen)
         else
           break;
       }
+
       printf("[%s] @ %p\n", stOpRet->label, HEAP_BASEADDR + (pAddr - pData));
       uiCount++;
     }
@@ -165,13 +207,13 @@ uint findJug(void *pData, uint uiLen)
 }
 
 // Search jmp & call
-uint findJmpCall(void *pData, uint uiLen)
+uint findJmpCall(uchar *pData, uint uiLen)
 {
   uint uiCount = 0;
   uint i;
   uint r;
 
-  void *pAddr;
+  uchar *pAddr;
 
   struct op* stOp;
 
@@ -194,13 +236,14 @@ uint findJmpCall(void *pData, uint uiLen)
   return uiCount;
 }
 
+// Search c3 chunks for ROP
 uint findChunk()
 {
   uint uiCount = 0;
   uint uiLen = LIBC_SIZE;
   uint i;
 
-  void* pAddr;
+  uchar* pAddr;
 
   struct op* stOpRet;
   struct op* stOpPrev;
@@ -232,7 +275,7 @@ uint findChunk()
 }
 
 
-uint findReg(void *pData, uint uiLen);
+uint findReg(uchar *pData, uint uiLen);
 
 // entry point of findjmp3
 int main(int argc, char *argv[])
@@ -250,8 +293,8 @@ int main(int argc, char *argv[])
   char szCPUName[13] = {0,};
   
   // memory
-  void *pFileData = 0;
-  char **ppList = 0;
+  uchar *pFileData = 0;
+  //char **ppList = 0; <- where was i gon use it?
   
   // file
   FILE *fp = 0;

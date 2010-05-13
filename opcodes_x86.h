@@ -26,6 +26,8 @@ struct op opcodes[200] =
   { OPTYPE_JMP, "\xff\x26", 2, "jmp *esi" },
   { OPTYPE_JMP, "\xff\x24\x24", 3, "jmp *esp" },
   { OPTYPE_JMP, "\xff\x65\x00", 3, "jmp *ebp" },
+
+  { OPTYPE_JMP, "\xff\x25****", 6, "jmp *%p" },
   
   /// CALL: 15
   

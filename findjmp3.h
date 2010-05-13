@@ -29,12 +29,14 @@
 
 struct op
 {
-  uchar optype;
-  uchar *codes;
-  uint size;
-  uchar *label;
+  uchar optype; // OPTYPE
+  uchar *codes; // OPCODE
+  uint size;    // OPCODE lenth
+  uchar *label; // OPCODE name
+  uchar *operand; // OPCODE offset (operand)
 };
 
+/* couldn't find the right header file :/ */
 struct dl_phdr_info
 {
     Elf32_Addr dlpi_addr;
@@ -42,7 +44,6 @@ struct dl_phdr_info
     const Elf32_Phdr *dlpi_phdr;
     Elf32_Half dlpi_phnum;
 };
-
 
 #include "opcodes_x86.h"
 //#include "opcodes_x64.h"
@@ -60,22 +61,23 @@ struct dl_phdr_info
 ;
 
 /* Mini-helper functions */
-uint getOpcode(uint uiOptype, const char *pData, struct op **stOp);
-uint getOpcodeR(uint uiOptype, const char *pData, struct op **stOp);
+uint match(uchar *pData, struct op *stOp, uchar *offset);
+uint getOpcode(uint uiOptype, uchar *pData, struct op **stOp);
+uint getOpcodeR(uint uiOptype, uchar *pData, struct op **stOp);
 
 /* Function prototypes */
 void putHelp();
 void getCPUInfo(uint *uiCPUID, char *szCPUID);
 
-uint findJug(void *pData, uint uiLen);
-uint findJmpCall(void *pData, uint uiLen);
-uint findReg(void *pData, uint uiLen);
+uint findJug(uchar *pData, uint uiLen);
+uint findJmpCall(uchar *pData, uint uiLen);
+uint findReg(uchar *pData, uint uiLen);
 uint findChunk();
-uint findJmpCall(void *pData, uint uiLen);
+uint findJmpCall(uchar *pData, uint uiLen);
 
 uint opcount = sizeof(opcodes) / sizeof(struct op);
 
-void *g_pLibAddr;
+uchar *g_pLibAddr;
 char *g_szLibPath;
 
 #endif
