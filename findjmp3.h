@@ -27,13 +27,15 @@
 #define OPTYPE_REG_ESP    0xc
 #define OPTYPE_REG_EBP    0xd
 
+#define MAX_OFFSET_SIZE 0x10
 struct op
 {
   uchar optype; // OPTYPE
-  uchar *codes; // OPCODE
-  uint size;    // OPCODE lenth
-  uchar *label; // OPCODE name
-  uchar *operand; // OPCODE offset (operand)
+  uchar *opbytes; // opcode bytes
+  uint oplen;    // OPCODE lenth
+  uchar *opname; // OPCODE name
+  uchar *operbytes; // operand bytes
+  uint operlen; // operand length
 };
 
 /* couldn't find the right header file :/ */
@@ -61,7 +63,7 @@ struct dl_phdr_info
 ;
 
 /* Mini-helper functions */
-int match(uchar *pData, struct op *stOp, uchar *offset);
+int matchWild(uchar *pData, struct op *stOp, uchar *offset);
 int getOpcode(uint uiOptype, uchar *pData, struct op **stOp);
 int getOpcodeR(uint uiOptype, uchar *pData, struct op **stOp);
 

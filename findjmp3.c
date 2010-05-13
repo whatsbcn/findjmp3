@@ -51,45 +51,50 @@ void putHelp()
 
 /* Mini-helper functions */
 
-// match();
-// Matches two data with length, supports wildcard with '*'
-// If there is wild card, returns a pointer to operands
-int match(uchar *pData, struct op *stOp, uchar *offset)
+// matchWild();
+// findjmp3 ver of memcmp with wild card support
+// it will work with non-wildcard opcodes also tho
+int matchWild(uchar *pData, struct op *stOp, uchar *offset)
 {
   uint uiWildCount = 0;
+  uint uiWildOffset = 0;
   uint uiCount = 0;
   uint i;
   bool bState = false;
 
-  for(i = 0; i < stOp->size; i++)
+  // operand save space
+  uchar *offs = malloc( MAX_OFFSET_SIZE );
+  if(0 != offs)
   {
-    if('*' == stOp->codes[i])
+    return -2;
+  }
+  memset(offs, 0, MAX_OFFSET_SIZE);
+
+  for(i = 0; i < stOp->oplen; i++)
+  {
+    if('*' == stOp->opbytes[i])
     {
       uiCount++;
+      uiWildCount++;
+      offs[uiWildOffset] = stOp->opbytes[i];
       continue;
     }
 
     // if not wild card, and match, increase count
-    if(stOp->codes[i] == (char)pData[i])
-    {
-      uiCount++;
-    }
-    // if wild card, increase count
-    else if('*' == stOp->codes[i])
+    if(stOp->opbytes[i] == pData[i])
     {
       uiCount++;
     }
     // if byte != byte (does not match)
     else
     {
-      return 0;
+      return -1;
     }
   }
 
-  if(uiCount == stOp->size)
-    return uiCount;
-
-  return 0;
+  // save operand bytes
+  offset = offs;
+  return uiWildCount;
 }
 
 // getOpcode();
@@ -98,16 +103,27 @@ int match(uchar *pData, struct op *stOp, uchar *offset)
 int getOpcode(uint uiOptype, uchar *pData, struct op** stOp)
 {
   uint i;
+  uchar *oper;
 
   for(i = 0; i < opcount; i++)
   {
     if(uiOptype == opcodes[i].optype)
     {
-//      if(0 != me
-      if(0 == memcmp(pData, opcodes[i].codes, opcodes[i].size))
+      if(0 == memcmp(pData, opcodes[i].opbytes, opcodes[i].oplen))
       {
         *stOp = &opcodes[i];
-        return opcodes[i].size;
+        return opcodes[i].oplen;
+      }
+      // if memcmp failed, try using wild card compare
+      else
+      {
+      /*
+        if(0 <= matchWild(pData, opcodes[i], &oper))
+        {
+          a_oper = oper;
+          return opcodes[i].oplen;
+        }
+      */
       }
     }
   }
@@ -128,8 +144,8 @@ int getOpcodeR(uint uiOptype, uchar *pData, struct op** stOp)
   {
     if(uiOptype == opcodes[i].optype)
     {
-      uiLen = opcodes[i].size;
-      if(0 == memcmp(pData-(uiLen-1), opcodes[i].codes, uiLen))
+      uiLen = opcodes[i].oplen;
+      if(0 == memcmp(pData-(uiLen-1), opcodes[i].opbytes, uiLen))
       {
         *stOp = &opcodes[i];
         return uiLen;
@@ -187,19 +203,19 @@ int findJug(uchar *pData, uint uiLen)
       {
         if(getOpcodeR(OPTYPE_POP, pAddr-1, &stOpPrev))
         {
-          pAddr -= stOpPrev->size;
-          printf("[%s] ", stOpPrev->label);
+          pAddr -= stOpPrev->oplen;
+          printf("[%s] ", stOpPrev->opname);
         }
         else if(getOpcodeR(OPTYPE_PUSH, pAddr-1, &stOpPrev))
         {
-          pAddr -= stOpPrev->size;
-          printf("[%s] ", stOpPrev->label);
+          pAddr -= stOpPrev->oplen;
+          printf("[%s] ", stOpPrev->opname);
         }
         else
           break;
       }
 
-      printf("[%s] @ %p\n", stOpRet->label, HEAP_BASEADDR + (pAddr - pData));
+      printf("[%s] @ %p\n", stOpRet->opname, HEAP_BASEADDR + (pAddr - pData));
       uiCount++;
     }
   }
@@ -223,13 +239,13 @@ int findJmpCall(uchar *pData, uint uiLen)
     if(getOpcode(OPTYPE_JMP, pData+i, &stOp))
     {
       pAddr = pData + i;
-      printf(" - [%s] @ %p\n", stOp->label, HEAP_BASEADDR + i);
+      printf(" - [%s] @ %p\n", stOp->opname, HEAP_BASEADDR + i);
       uiCount++;
     }
     else if(getOpcode(OPTYPE_CALL, pData+i, &stOp))
     {
       pAddr = pData + i;
-      printf(" - [%s] @ %p\n", stOp->label, HEAP_BASEADDR + i);
+      printf(" - [%s] @ %p\n", stOp->opname, HEAP_BASEADDR + i);
       uiCount++;
     }
   }
@@ -264,7 +280,7 @@ int findChunk()
   {
     if(getOpcode(OPTYPE_RET, pAddr+i, &stOpRet))
     {
-      printf(" - [%s] @ %p\n", stOpRet->label, g_pLibAddr + i);
+      printf(" - [%s] @ %p\n", stOpRet->opname, g_pLibAddr + i);
       uiCount++;
     }
 
