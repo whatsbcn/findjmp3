@@ -118,15 +118,32 @@ int matchWild(uchar *pData, struct op *stOp, uchar **a_operbytes)
   return uiWildCount;
 }
 
-
+// partial copy
+// opbytes,opname,.. stays same (same ptr)
+// but operbytes will be 
 struct op* copyStOp(struct op *a_stOp)
 {
+  uint uiSize = sizeof(struct op);
+  struct op *stOp = malloc(uiSize);
+  if(0 == stOp)
+    return -2;
 
-  return 0;
+  memset(stOp, 0, uiSize);
+  memcpy(stOp, a_stOp, uiSize);
+
+  return stOp;
 }
+
 void delStOp(struct op *a_stOp)
 {
-
+  if(0 != a_stOp)
+  {
+    if(0 != a_stOp->operbytes)
+    {
+      free(a_stOp->operbytes);
+    }
+    free(a_stOp);
+  }
 }
 
 
@@ -160,25 +177,9 @@ int getOpcode(uint uiOptype, uchar *pData, struct op** a_stOp)
       // if opcode found, copy it
       if(bFound)
       {
-        stOp = malloc(sizeof(struct op));
-        if(0 == stOp)
-          return -2;
-
-        memset(stOp, 0, sizeof(struct op));
-        memcpy(stOp, &opcodes[i], sizeof(struct op));
-
-        if(bWild)
-        {
-          stOp->operbytes = oper;
-          stOp->operlen = r;
-        }
-        else
-        {
-          stOp->operbytes = 0;
-          stOp->operlen = 0;
-        }
-
-        return opcodes[i].oplen;        
+        stOp = copyStOp(&opcodes[i]);
+        *a_stOp = stOp;
+        return stOp->oplen;        
       }
     }
   }
