@@ -193,7 +193,7 @@ int getOpcode(uint uiOptype, uchar *pData, struct op** a_stOp)
 // Returns >0 if pData ptr is at end of the intruction
 // Iterates backwards to see if current data ptr is at the end of
 // valid instruction opcodes
-int getOpcodeR(uint uiOptype, uchar *pData, struct op** stOp)
+int getOpcodeR(uint uiOptype, uchar *pData, struct op** a_stOp)
 {
   uint i;
   uint uiLen;
@@ -205,12 +205,14 @@ int getOpcodeR(uint uiOptype, uchar *pData, struct op** stOp)
       uiLen = opcodes[i].oplen;
       if(0 == memcmp(pData-(uiLen-1), opcodes[i].opbytes, uiLen))
       {
-        *stOp = &opcodes[i];
+        *a_stOp = copyStOp(&opcodes[i]);
+        if(0 > *a_stOp)
+          return -2;
         return uiLen;
       }
     }
   }
-  stOp = 0;
+  a_stOp = 0;
   return 0;
 }
 
@@ -263,17 +265,20 @@ int findJug(uchar *pData, uint uiLen)
         {
           pAddr -= stOpPrev->oplen;
           printf("[%s] ", stOpPrev->opname);
+          delStOp(stOpPrev);
         }
         else if(getOpcodeR(OPTYPE_PUSH, pAddr-1, &stOpPrev))
         {
           pAddr -= stOpPrev->oplen;
           printf("[%s] ", stOpPrev->opname);
+          delStOp(stOpPrev);
         }
         else
           break;
       }
 
       printf("[%s] @ %p\n", stOpRet->opname, HEAP_BASEADDR + (pAddr - pData));
+      delStOp(stOpRet);
       uiCount++;
     }
   }
@@ -298,12 +303,14 @@ int findJmpCall(uchar *pData, uint uiLen)
     {
       pAddr = pData + i;
       printf(" - [%s] @ %p\n", stOp->opname, HEAP_BASEADDR + i);
+      delStOp(stOp);
       uiCount++;
     }
     else if(getOpcode(OPTYPE_CALL, pData+i, &stOp))
     {
       pAddr = pData + i;
       printf(" - [%s] @ %p\n", stOp->opname, HEAP_BASEADDR + i);
+      delStOp(stOp);
       uiCount++;
     }
   }
@@ -340,8 +347,10 @@ int findChunk()
     {
       printf(" - [%s] @ %p\n", stOpRet->opname, g_pLibAddr + i);
       uiCount++;
+      delStOp(stOpRet);
     }
 
+    // only for testing, this limit will be removed later
     if(uiCount > 10)
       return uiCount;
   }
