@@ -5,7 +5,7 @@
 #ifndef _FINDJMP3_OPCODES_X86_H_
 #define _FINDJMP3_OPCODES_X86_H_
 
-struct op opcodes[200] =
+struct op opcodes[300] =
 {
   /// JMP: 15
   
@@ -27,7 +27,7 @@ struct op opcodes[200] =
   { OPTYPE_JMP, "\xff\x24\x24", 3, "jmp *esp" },
   { OPTYPE_JMP, "\xff\x65\x00", 3, "jmp *ebp" },
 
-  { OPTYPE_JMP, "\xff\x25****", 6, "jmp *%p" },
+  { OPTYPE_JMP, "\xff\x25****", 6, "jmp ****" },
   
   /// CALL: 15
   
@@ -84,6 +84,34 @@ struct op opcodes[200] =
   
   { OPTYPE_RET, "\xc2", 1, "ret" },
   { OPTYPE_RET, "\xc3", 1, "ret" }
+
+  /// MOV
+  { OPTYPE_MOV, "\x89\xe5", 2, "mov esp ebp" },
+  { OPTYPE_MOV, "\x89\xe1", 2, "mov esp ecx" },
+  { OPTYPE_MOV, "\xa1****", 5, "mov **** eax" },
+  { OPTYPE_MOV, "\xbb****", 5, "mov **** ebx" },
+
+  /// ADD
+
+  /// SUB
+  { OPTYPE_SUB, "\x83\xec*", 3, "sub * esp" },
+  { OPTYPE_SUB, "\x83\xeb*", 3, "sub * ebx" },
+
+  /// LEAVE
+
+  /// XOR
+  { OPTYPE_XOR, "\x31\xed", 2, "xor ebp ebp" },
+  { OPTYPE_XOR, "\x31\xc0", 2, "xor eax eax" },
+  { OPTYPE_XOR, "\x31\xf6", 2, "xor esi esi" },
+
+  /// AND
+
+  /// NOT
+
+  /// COND- JMP (jz, jnz, jae, jne, ..)
+
+  /// LEA
+
   
 }
 #endif

@@ -2,15 +2,12 @@
 //
 // findjmp3.c - justin sunwoo kim
 // t1g3r @t sapheads d.t org
-// jskim @t sapheads d.t org
 //
 /////////////////////////////////////////////////////////////////////////////
 
 //TODO
-// 1. create copy of struct op for argument return
-//    don't forget to free it afterwards, (performance ?)
-// 2. detect wild card and its values
-// 3. function to create, copy, destroy struct op;
+// 1. custom byte search in library and in file
+// 2. split searching mode to: file mode & library mode
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -85,7 +82,7 @@ int matchWild(uchar *pData, struct op *stOp, uchar **a_operbytes)
     {
       uiCount++;
       uiWildCount++;
-      offs[uiWildOffset] = stOp->opbytes[i];
+      offs[uiWildOffset++] = pData[i];
       continue;
     }
 
@@ -103,11 +100,12 @@ int matchWild(uchar *pData, struct op *stOp, uchar **a_operbytes)
 
   if(0 < uiWildCount)
   {
+    // printf("Wild card match\n");
     // save operand bytes
     *a_operbytes = malloc(MAX_OFFSET_SIZE);
     if(0 == *a_operbytes)
       return -2;
-    memset(&offs, 0, MAX_OFFSET_SIZE);
+    memset(*a_operbytes, 0, MAX_OFFSET_SIZE);
     memcpy(*a_operbytes, &offs, MAX_OFFSET_SIZE);
   }
   else
@@ -178,6 +176,12 @@ int getOpcode(uint uiOptype, uchar *pData, struct op** a_stOp)
       if(bFound)
       {
         stOp = copyStOp(&opcodes[i]);
+        // if it was wild card matching, save operand bytes
+        if(bWild)
+        {
+          stOp->operlen = r;
+          stOp->operbytes = oper;
+        }
         *a_stOp = stOp;
         return stOp->oplen;        
       }
@@ -290,7 +294,7 @@ int findJug(uchar *pData, uint uiLen)
 int findJmpCall(uchar *pData, uint uiLen)
 {
   uint uiCount = 0;
-  uint i;
+  uint i, j;
   uint r;
 
   uchar *pAddr;
@@ -302,7 +306,20 @@ int findJmpCall(uchar *pData, uint uiLen)
     if(getOpcode(OPTYPE_JMP, pData+i, &stOp))
     {
       pAddr = pData + i;
-      printf(" - [%s] @ %p\n", stOp->opname, HEAP_BASEADDR + i);
+      if(0 < stOp->operlen)
+      {
+        printf(" - [%s] @ %p (oper: ", stOp->opname, HEAP_BASEADDR + i);
+        for(j = 0; j < stOp->operlen; j++)
+        {
+          printf("%02x ", stOp->operbytes[j]);
+        }
+        printf(")\n");
+      }
+      else
+      {
+        printf(" - [%s] @ %p\n", stOp->opname, HEAP_BASEADDR + i);
+      }
+
       delStOp(stOp);
       uiCount++;
     }
@@ -346,6 +363,11 @@ int findChunk()
     if(getOpcode(OPTYPE_RET, pAddr+i, &stOpRet))
     {
       printf(" - [%s] @ %p\n", stOpRet->opname, g_pLibAddr + i);
+
+      //decrease ret size,
+      //then call getOpcodeR() for any kind of instruction
+      //match
+
       uiCount++;
       delStOp(stOpRet);
     }
@@ -515,6 +537,6 @@ int main(int argc, char *argv[])
     printf("------------------------------------------\n");
   }
 
-  printf("[v] Thank you, come again! r0ar!\n");	 
+  printf("[v] Thank you, come again! uh-heung! r0ar!\n");	 
   return 0;
 }

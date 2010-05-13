@@ -2,7 +2,6 @@
 //
 // findjmp3.h - justin sunwoo kim
 // t1g3r @t sapheads d.t org
-// jskim @t sapheads d.t org
 //
 /////////////////////////////////////////////////////////////////////////////
 
@@ -17,15 +16,19 @@
 #define OPTYPE_PUSH   0x3
 #define OPTYPE_POP    0x4
 #define OPTYPE_RET    0x5
+#define OPTYPE_MOV    0x6
+//#define OPTYPE_ADD
+//#define OPTYPE_SUB
+//#define OPTYPE_LEA
 
-#define OPTYPE_REG_EAX    0x6
-#define OPTYPE_REG_EBX    0x7
-#define OPTYPE_REG_ECX    0x8
-#define OPTYPE_REG_EDX    0x9
-#define OPTYPE_REG_ESI    0xa
-#define OPTYPE_REG_EDI    0xb
-#define OPTYPE_REG_ESP    0xc
-#define OPTYPE_REG_EBP    0xd
+#define OPTYPE_REG_EAX    0x1000
+#define OPTYPE_REG_EBX    0x1001
+#define OPTYPE_REG_ECX    0x1002
+#define OPTYPE_REG_EDX    0x1003
+#define OPTYPE_REG_ESI    0x1004
+#define OPTYPE_REG_EDI    0x1005
+#define OPTYPE_REG_ESP    0x1006
+#define OPTYPE_REG_EBP    0x1007
 
 #define MAX_OFFSET_SIZE 0x10
 struct op
