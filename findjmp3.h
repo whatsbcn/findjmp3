@@ -17,9 +17,10 @@
 #define OPTYPE_POP    0x4
 #define OPTYPE_RET    0x5
 #define OPTYPE_MOV    0x6
-//#define OPTYPE_ADD
-//#define OPTYPE_SUB
-//#define OPTYPE_LEA
+#define OPTYPE_ADD    0x7
+#define OPTYPE_SUB    0x8
+#define OPTYPE_LEA    0x9
+#define OPTYPE_XOR    0xa
 
 #define OPTYPE_REG_EAX    0x1000
 #define OPTYPE_REG_EBX    0x1001

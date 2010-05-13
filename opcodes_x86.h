@@ -83,7 +83,7 @@ struct op opcodes[300] =
   /// RET: 2
   
   { OPTYPE_RET, "\xc2", 1, "ret" },
-  { OPTYPE_RET, "\xc3", 1, "ret" }
+  { OPTYPE_RET, "\xc3", 1, "ret" },
 
   /// MOV
   { OPTYPE_MOV, "\x89\xe5", 2, "mov esp ebp" },
@@ -102,7 +102,7 @@ struct op opcodes[300] =
   /// XOR
   { OPTYPE_XOR, "\x31\xed", 2, "xor ebp ebp" },
   { OPTYPE_XOR, "\x31\xc0", 2, "xor eax eax" },
-  { OPTYPE_XOR, "\x31\xf6", 2, "xor esi esi" },
+  { OPTYPE_XOR, "\x31\xf6", 2, "xor esi esi" }
 
   /// AND
 
