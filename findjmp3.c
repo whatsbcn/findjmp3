@@ -6,6 +6,12 @@
 //
 /////////////////////////////////////////////////////////////////////////////
 
+//TODO
+// 1. create copy of struct op for argument return
+//    don't forget to free it afterwards, (performance ?)
+// 2. detect wild card and its values
+// 3. function to create, copy, destroy struct op;
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -17,8 +23,6 @@
 #include <sys/stat.h>
 
 #include "findjmp3.h"
-
-//opcode check
 
 // returns cpu info
 void getCPUInfo(uint *uiCPUID, char *szCPUID)
@@ -54,7 +58,15 @@ void putHelp()
 // matchWild();
 // findjmp3 ver of memcmp with wild card support
 // it will work with non-wildcard opcodes also tho
-int matchWild(uchar *pData, struct op *stOp, uchar *offset)
+// returns num of wild cards detected
+// return 0 if matching (w/o wild card): shouldn't really be the case
+//  as checked by previous function with memcmp()
+// returns 0 < r; when in error
+// @in: uchar *pData
+// @in: struct op *stOp
+// @out: uchar *a_operbytes
+//
+int matchWild(uchar *pData, struct op *stOp, uchar **a_operbytes)
 {
   uint uiWildCount = 0;
   uint uiWildOffset = 0;
@@ -63,12 +75,9 @@ int matchWild(uchar *pData, struct op *stOp, uchar *offset)
   bool bState = false;
 
   // operand save space
-  uchar *offs = malloc( MAX_OFFSET_SIZE );
-  if(0 != offs)
-  {
-    return -2;
-  }
-  memset(offs, 0, MAX_OFFSET_SIZE);
+  uchar offs[MAX_OFFSET_SIZE];
+
+  memset(&offs, 0, MAX_OFFSET_SIZE);
 
   for(i = 0; i < stOp->oplen; i++)
   {
@@ -92,18 +101,47 @@ int matchWild(uchar *pData, struct op *stOp, uchar *offset)
     }
   }
 
-  // save operand bytes
-  offset = offs;
+  if(0 < uiWildCount)
+  {
+    // save operand bytes
+    *a_operbytes = malloc(MAX_OFFSET_SIZE);
+    if(0 == *a_operbytes)
+      return -2;
+    memset(&offs, 0, MAX_OFFSET_SIZE);
+    memcpy(*a_operbytes, &offs, MAX_OFFSET_SIZE);
+  }
+  else
+  {
+    *a_operbytes = 0;
+  }
+
   return uiWildCount;
 }
+
+
+struct op* copyStOp(struct op *a_stOp)
+{
+
+  return 0;
+}
+void delStOp(struct op *a_stOp)
+{
+
+}
+
 
 // getOpcode();
 // Returns true if pData ptr is at some instruction
 // Iterates to see if current data ptr is at ret-equivalent instructions
-int getOpcode(uint uiOptype, uchar *pData, struct op** stOp)
+int getOpcode(uint uiOptype, uchar *pData, struct op** a_stOp)
 {
   uint i;
+  int r;
   uchar *oper;
+  bool bFound = false;
+    bool bWild = false;  // dep on bFound
+
+  struct op *stOp;
 
   for(i = 0; i < opcount; i++)
   {
@@ -111,23 +149,42 @@ int getOpcode(uint uiOptype, uchar *pData, struct op** stOp)
     {
       if(0 == memcmp(pData, opcodes[i].opbytes, opcodes[i].oplen))
       {
-        *stOp = &opcodes[i];
-        return opcodes[i].oplen;
+        bFound = true;
       }
       // if memcmp failed, try using wild card compare
-      else
+      else if(0 <= (r = matchWild(pData, &opcodes[i], &oper)) )
       {
-      /*
-        if(0 <= matchWild(pData, opcodes[i], &oper))
+          bFound = bWild = true;
+      }
+
+      // if opcode found, copy it
+      if(bFound)
+      {
+        stOp = malloc(sizeof(struct op));
+        if(0 == stOp)
+          return -2;
+
+        memset(stOp, 0, sizeof(struct op));
+        memcpy(stOp, &opcodes[i], sizeof(struct op));
+
+        if(bWild)
         {
-          a_oper = oper;
-          return opcodes[i].oplen;
+          stOp->operbytes = oper;
+          stOp->operlen = r;
         }
-      */
+        else
+        {
+          stOp->operbytes = 0;
+          stOp->operlen = 0;
+        }
+
+        return opcodes[i].oplen;        
       }
     }
   }
-  stOp = 0;
+
+  // if none found, return 0
+  a_stOp = 0;
   return 0;
 }
 

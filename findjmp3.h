@@ -63,9 +63,12 @@ struct dl_phdr_info
 ;
 
 /* Mini-helper functions */
-int matchWild(uchar *pData, struct op *stOp, uchar *offset);
+int matchWild(uchar *pData, struct op *stOp, uchar **a_operbytes);
 int getOpcode(uint uiOptype, uchar *pData, struct op **stOp);
 int getOpcodeR(uint uiOptype, uchar *pData, struct op **stOp);
+
+struct op* copyStOp(struct op *a_stOp);
+void delStOp(struct op *a_stOp);
 
 /* Function prototypes */
 void putHelp();
