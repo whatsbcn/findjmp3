@@ -28,7 +28,8 @@ struct op opcodes[300] =
   { OPTYPE_JMP, "\xff\x65\x00", 3, "jmp *ebp" },
 
   { OPTYPE_JMP, "\xff\x25****", 6, "jmp ****" },
-  
+  { OPTYPE_JMP, "\xe9****", 5, "jmp (-) ****" },
+
   /// CALL: 15
   
   { OPTYPE_CALL, "\xff\xd0", 2, "call eax" },
@@ -68,6 +69,8 @@ struct op opcodes[300] =
   { OPTYPE_PUSH, "\xff\x36", 2, "push *esi" },
   { OPTYPE_PUSH, "\xff\x34\x24", 3, "push *esp" },
   { OPTYPE_PUSH, "\xff\x75\x00", 3, "push *ebp" },
+
+  { OPTYPE_PUSH, "\x68****", 4, "push ****" },
   
   /// POP: 8
   
@@ -88,8 +91,16 @@ struct op opcodes[300] =
   /// MOV
   { OPTYPE_MOV, "\x89\xe5", 2, "mov esp ebp" },
   { OPTYPE_MOV, "\x89\xe1", 2, "mov esp ecx" },
-  { OPTYPE_MOV, "\xa1****", 5, "mov **** eax" },
-  { OPTYPE_MOV, "\xbb****", 5, "mov **** ebx" },
+
+  { OPTYPE_MOV, "\x8b\x36", 2, "mov (esi) esi" },
+
+  { OPTYPE_MOV, "\xbf****", 5, "mov [ ] edi" },
+  { OPTYPE_MOV, "\xa1****", 5, "mov [ ] eax" },
+  { OPTYPE_MOV, "\xbb****", 5, "mov [ ] ebx" },
+
+  { OPTYPE_MOV, "\x89\x5c\x24*", 4, "mov ebx, [ ](esp)" },
+  { OPTYPE_MOV, "\x89\x14\x24", 3, "mov edx (esp)" },
+  { OPTYPE_MOV, "\x89\x04\x24", 3, "mov eax (esp)" },
 
   /// ADD
 
