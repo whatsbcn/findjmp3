@@ -1,0 +1,222 @@
+cc -o test test.c
+./findjmp3 -a test
+------------------------------------------
+[*] findjmp3.c - t1g3r @t sapheads d.t org
+------------------------------------------
+[+] CPU: GenuineIntel (type:0xb)
+[+] Target file: test
+[+] File size: 8297 bytes
+------------------------------------------
+[+] Searching for stack jugglers.. (pop,add,ret)
+------------------------------------------
+ - [ret] @ 0x80482c6
+ - [ret] @ 0x80482e7
+ - [pop ebp] [pop ebx] [ret] @ 0x80483b2
+ - [ret] @ 0x80483e2
+ - [ret] @ 0x80483fa
+ - [pop ebp] [ret] @ 0x8048403
+ - [ret] @ 0x804841c
+ - [pop ebp] [pop edi] [pop esi] [pop ebx] [ret] @ 0x8048465
+ - [ret] @ 0x804846d
+ - [pop ebp] [pop ebx] [ret] @ 0x8048497
+ - [ret] @ 0x80484aa
+ - [ret] @ 0x80484b7
+ - [ret] @ 0x8049790
+ - [ret] @ 0x8049e08
+------------------------------------------
+[+] Searching for jmp & call..
+------------------------------------------
+ - [jmp ****] @ 0x80482ee (oper: fc 9f 04 08 )
+ - [jmp ****] @ 0x80482f8 (oper: 00 a0 04 08 )
+ - [jmp (-) ****] @ 0x8048303 (oper: e0 ff ff ff )
+ - [jmp ****] @ 0x8048308 (oper: 04 a0 04 08 )
+ - [jmp (-) ****] @ 0x8048313 (oper: d0 ff ff ff )
+ - [jmp ****] @ 0x8048318 (oper: 08 a0 04 08 )
+ - [jmp (-) ****] @ 0x8048323 (oper: c0 ff ff ff )
+ - [call eax] @ 0x80483df
+ - [call eax] @ 0x804848b
+ - [call *ebx] @ 0x8049c17
+------------------------------------------
+[+] Searching for chunks for ROP.. c3 c3 c3
+------------------------------------------
+[+] LIBC lib @ 0x40027000
+[+] LIBC path: /lib/tls/i686/cmov/libc.so.6
+ - [pop ecx] [ret] @ 0x40028350
+ - [pop edi] [ret] @ 0x40028c52
+ - [push esp] [ret] @ 0x40028c54
+ - [pop edx] [ret] @ 0x4002a7ec
+ - [push ecx] [ret] @ 0x4002c32c
+ - [pop esi] [ret] @ 0x400325c4
+ - [push edi] [push eax] [ret] @ 0x40032e08
+ - [pop eax] [ret] @ 0x4003388c
+ - [pop edi] [pop edi] [ret] @ 0x40034472
+ - [pop edi] [ret] @ 0x400344c2
+ - [pop edi] [ret] @ 0x40034b1f
+ - [pop edi] [ret] @ 0x40034e56
+ - [pop edi] [pop edi] [ret] @ 0x40035bd9
+ - [pop edi] [ret] @ 0x400363e4
+ - [pop edi] [pop edi] [ret] @ 0x40036838
+ - [push ****] [push ****] [ret] @ 0x40036a05
+ - [pop edi] [pop edi] [ret] @ 0x40036b8a
+ - [pop edi] [ret] @ 0x40036d77
+ - [pop edi] [ret] @ 0x40037ab9
+ - [pop edi] [pop edi] [ret] @ 0x40038178
+ - [pop edi] [ret] @ 0x40038744
+ - [pop edi] [pop edi] [ret] @ 0x400387cf
+ - [pop edi] [ret] @ 0x4003885b
+ - [pop edi] [ret] @ 0x40038d01
+ - [pop edi] [pop edi] [ret] @ 0x40038e4a
+ - [push ****] [ret] @ 0x40038ec6
+ - [pop edi] [ret] @ 0x400390a4
+ - [pop edi] [ret] @ 0x40039319
+ - [push esi] [ret] @ 0x40039882
+ - [pop ecx] [ret] @ 0x4003aac1
+ - [pop ecx] [ret] @ 0x4003adad
+ - [push eax] [ret] @ 0x4003c670
+ - [push ebp] [ret] @ 0x4003e217
+ - [pop esp] [ret] @ 0x4003e7c7
+ - [push ebp] [ret] @ 0x4003e9bc
+ - [push esi] [ret] @ 0x4003f043
+ - [mov eax (esp)] [ret] @ 0x4003f269
+ - [push ebp] [ret] @ 0x4003f300
+ - [push ebp] [ret] @ 0x4003fc4a
+ - [push ebp] [ret] @ 0x4003fefd
+ - [sub * esp] [ret] @ 0x4003ff61
+ - [sub * esp] [ret] @ 0x400400c5
+ - [push edi] [mov esp ebp] [push ebp] [ret] @ 0x400403e0
+ - [push ****] [ret] @ 0x40043b98
+ - [pop ebx] [ret] @ 0x4004421e
+ - [push ebx] [push esi] [push edi] [mov esp ebp] [push ebp] [ret] @ 0x400447a0
+ - [mov eax (esp)] [ret] @ 0x40044ea4
+ - [push ebp] [ret] @ 0x40046620
+ - [mov [ ] ebx] [ret] @ 0x40046f57
+ - [push ebp] [ret] @ 0x4004a207
+ - [push ebp] [ret] @ 0x4004c200
+ - [xor eax eax] [ret] @ 0x4004d082
+ - [push ****] [ret] @ 0x4004e187
+ - [pop ebp] [pop edi] [pop esi] [pop ebx] [ret] @ 0x4004f1b0
+ - [push ebp] [ret] @ 0x400505f5
+ - [push ebp] [ret] @ 0x40050b59
+ - [push esp] [ret] @ 0x4005375d
+ - [pop ebx] [ret] @ 0x40053784
+ - [push ebp] [ret] @ 0x40053c2f
+ - [push ebp] [ret] @ 0x40054072
+ - [push ebp] [ret] @ 0x4005532f
+ - [mov eax (esp)] [ret] @ 0x40055954
+ - [push ebp] [ret] @ 0x40055c5c
+ - [push ebp] [ret] @ 0x40055d64
+ - [push edi] [mov esp ebp] [push ebp] [ret] @ 0x40056370
+ - [pop ebp] [ret] @ 0x40056b24
+ - [push edi] [mov esp ebp] [push ebp] [ret] @ 0x40056bf0
+ - [push ecx] [ret] @ 0x40056c5f
+ - [mov eax (esp)] [ret] @ 0x40056fe0
+ - [mov esp ebp] [push ebp] [ret] @ 0x400571d0
+ - [push edi] [mov esp ebp] [push ebp] [ret] @ 0x40057610
+ - [push ebp] [ret] @ 0x400578e6
+ - [xor eax eax] [ret] @ 0x400581bf
+ - [pop ebx] [pop esp] [ret] @ 0x40058223
+ - [push ecx] [ret] @ 0x400583ca
+ - [push esp] [ret] @ 0x40058618
+ - [push esp] [ret] @ 0x400589ef
+ - [push ebp] [ret] @ 0x40059ffc
+ - [push ebp] [ret] @ 0x4005a40a
+ - [push esp] [ret] @ 0x4005bc84
+ - [push esp] [ret] @ 0x4005c413
+ - [sub * esp] [push ebx] [ret] @ 0x4005d669
+ - [sub * esp] [mov esp ebp] [push ebp] [ret] @ 0x4005d8e0
+ - [push esp] [ret] @ 0x4005e2e1
+ - [push esp] [ret] @ 0x4005e520
+ - [push esp] [ret] @ 0x40061d25
+ - [push esp] [ret] @ 0x40062106
+ - [mov esp ebp] [push ebp] [ret] @ 0x40062360
+ - [mov edx (esp)] [ret] @ 0x40062790
+ - [push ebp] [ret] @ 0x40062fa7
+ - [push edi] [mov esp ebp] [push ebp] [ret] @ 0x400637c0
+ - [push eax] [ret] @ 0x4006495a
+ - [push eax] [ret] @ 0x40069733
+ - [push ebp] [ret] @ 0x4006acc6
+ - [push esp] [ret] @ 0x4006c601
+ - [push ecx] [ret] @ 0x4006ca0b
+ - [push ****] [ret] @ 0x400702bc
+ - [push ebp] [ret] @ 0x40071893
+ - [mov eax (esp)] [ret] @ 0x400719a3
+ - [push esp] [ret] @ 0x40071c60
+ - [pop eax] [ret] @ 0x40071ce4
+ - [mov [ ] edi] [ret] @ 0x40072a27
+ - [push ecx] [ret] @ 0x400734ca
+ - [mov esp ebp] [push ebp] [ret] @ 0x40075b60
+ - [push ebp] [ret] @ 0x40075cb0
+ - [pop ebp] [ret] @ 0x4007638e
+ - [call *eax] [ret] @ 0x400778bc
+ - [pop edx] [ret] @ 0x40078a98
+ - [push ebp] [ret] @ 0x40078b8f
+ - [push esp] [ret] @ 0x40079e8c
+ - [push eax] [ret] @ 0x4007c32e
+ - [mov eax (esp)] [ret] @ 0x40080eb0
+ - [push esp] [ret] @ 0x40081be7
+ - [pop esi] [pop ebx] [ret] @ 0x40081db0
+ - [push esi] [push edi] [mov esp ebp] [push ebp] [ret] @ 0x400829b0
+ - [push ebp] [ret] @ 0x40082f50
+ - [push esi] [ret] @ 0x400839fc
+ - [mov esp ebp] [push ebp] [ret] @ 0x40084cd0
+ - [pop ebp] [ret] @ 0x40084cdd
+ - [push ebp] [ret] @ 0x400850c0
+ - [pop ebp] [ret] @ 0x40086617
+ - [sub * esp] [mov esp ebp] [push ebp] [ret] @ 0x40086750
+ - [pop ebx] [ret] @ 0x40086800
+ - [push esi] [ret] @ 0x400872fe
+ - [push esi] [ret] @ 0x400880bb
+ - [push esi] [ret] @ 0x400890d0
+ - [pop esi] [ret] @ 0x400893b9
+ - [mov eax (esp)] [ret] @ 0x40089596
+ - [mov esp ebp] [push ebp] [ret] @ 0x40089bd0
+ - [push eax] [ret] @ 0x40089cc8
+ - [pop eax] [ret] @ 0x40089e06
+ - [pop esi] [ret] @ 0x4008a0e6
+ - [push ebp] [ret] @ 0x4008a9d8
+ - [mov edx (esp)] [ret] @ 0x4008ab29
+ - [push esp] [ret] @ 0x4008ad2c
+ - [push edx] [ret] @ 0x4008addc
+ - [push esp] [ret] @ 0x4008b4c3
+ - [sub * esp] [mov esp ebp] [push ebp] [ret] @ 0x4008bb80
+ - [mov esp ebp] [push ebp] [ret] @ 0x4008bc20
+ - [pop ebp] [ret] @ 0x4008c427
+ - [push ebp] [ret] @ 0x4008c611
+ - [push ebp] [ret] @ 0x4008c61c
+ - [pop ebx] [ret] @ 0x4008ca7e
+ - [push ebp] [ret] @ 0x4008cad0
+ - [push ebp] [ret] @ 0x4008cb10
+ - [mov esp ebp] [push ebp] [ret] @ 0x4008cb90
+ - [mov [ ] edi] [ret] @ 0x4008cf1b
+ - [mov edx (esp)] [ret] @ 0x4008d435
+ - [push eax] [push esi] [ret] @ 0x4008d45f
+ - [pop esi] [ret] @ 0x4008d6d8
+ - [sub * esp] [push ebx] [push esi] [push edi] [mov esp ebp] [push ebp] [ret] @ 0x4008d710
+ - [push eax] [ret] @ 0x4008d7d6
+ - [xor eax eax] [push ebp] [ret] @ 0x4008dc30
+ - [pop edx] [ret] @ 0x4008dc55
+ - [mov esp ebp] [push ebp] [ret] @ 0x4008dd50
+ - [push esi] [ret] @ 0x4008ddd2
+ - [push esi] [ret] @ 0x4008e10a
+ - [push esi] [ret] @ 0x4008e35d
+ - [push ebp] [ret] @ 0x4008e930
+ - [pop eax] [ret] @ 0x4008ef94
+ - [push eax] [ret] @ 0x4008f17f
+ - [mov [ ] ebx] [ret] @ 0x4008f201
+ - [mov [ ] eax] [ret] @ 0x4008f269
+ - [xor eax eax] [ret] @ 0x4008f491
+ - [pop ebp] [ret] @ 0x4008f6cd
+ - [xor eax eax] [ret] @ 0x4008fedf
+ - [call eax] [mov edx (esp)] [ret] @ 0x4009001d
+ - [mov esp ebp] [push ebp] [ret] @ 0x40090400
+ - [mov eax (esp)] [ret] @ 0x40090737
+ - [pop edi] [ret] @ 0x400910b2
+ - [push esp] [ret] @ 0x400938bd
+ - [push esi] [push edi] [mov esp ebp] [push ebp] [ret] @ 0x40093cd0
+ - [mov edx (esp)] [ret] @ 0x40094092
+ - [push ebp] [ret] @ 0x40094159
+ - [sub * esp] [mov esp ebp] [push ebp] [ret] @ 0x400955b0
+ - [push esi] [push edi] [mov esp ebp] [push ebp] [ret] @ 0x40096520
+ - [sub * esp] [mov esp ebp] [push ebp] [ret] @ 0x400969f0
+ - [push ecx] [ret] @ 0x40097196
+ - [push edx] 
