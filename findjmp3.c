@@ -320,7 +320,7 @@ int findJug(uchar *pData, uint uiLen)
         if(getOpcodeR(OPTYPE_POP, pAddr-1, &stOpPrev))
         {
           pAddr -= stOpPrev->oplen;
-          //printf("([%s])\n ", stOpPrev->opname);
+          printf("[%s] ", stOpPrev->opname);
           delStOp(stOpPrev);
         }
         else if(getOpcodeR(OPTYPE_PUSH, pAddr-1, &stOpPrev))
@@ -396,6 +396,8 @@ int findChunk()
 
   uchar* pAddr;
 
+  bool bFound;
+
   struct op* stOpRet;
   struct op* stOpPrev;
 
@@ -412,23 +414,45 @@ int findChunk()
 
   for(i = 0; i < uiLen; i++)
   {
+    bFound = false;
+    pAddr = g_pLibAddr + i;
     if(getOpcode(OPTYPE_RET, pAddr+i, &stOpRet))
     {
-      printf(" - [%s] @ %p\n", stOpRet->opname, g_pLibAddr + i);
+      pAddr -= stOpRet->oplen;
+      while(1)
+      {
+        // search for MOV
+        if(getOpcodeR(OPTYPE_MOV, pAddr-1, &stOpPrev)
+          || getOpcodeR(OPTYPE_XOR, pAddr-1, &stOpPrev)
+          || getOpcodeR(OPTYPE_ADD, pAddr-1, &stOpPrev))
+          // || getOpcodeR(OPTYPE_SUB, pAddr-1, &stOpPrev))
+        {
+          if(!bFound)
+          {
+            bFound = true;
+            printf(" - ");
+          }
+
+          printf("[%s] ", stOpPrev->opname);
+          pAddr -= stOpPrev->oplen;
+          delStOp(stOpPrev);
+        }
+        else
+          break;
+       }
 
       //decrease ret size,
       //then call getOpcodeR() for any kind of instruction
       //match
 
+      if(bFound)
+        printf("[%s] @ %p\n", stOpRet->opname, pAddr);
+
       uiCount++;
       delStOp(stOpRet);
     }
 
-    // only for testing, this limit will be removed later
-    if(uiCount > 10)
-      return uiCount;
-  }
-
+  } // end of for
   return uiCount;
 }
 
