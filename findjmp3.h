@@ -71,6 +71,7 @@ int matchWild(uchar *pData, struct op *stOp, uchar **a_operbytes);
 int getOpcode(uint uiOptype, uchar *pData, struct op **stOp);
 int getOpcodeR(uint uiOptype, uchar *pData, struct op **stOp);
 
+bool isWild(struct op* a_stOp);
 struct op* copyStOp(struct op *a_stOp);
 void delStOp(struct op *a_stOp);
 

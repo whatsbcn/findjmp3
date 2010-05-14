@@ -8,6 +8,7 @@
 //TODO
 // 1. custom byte search in library and in file
 // 2. split searching mode to: file mode & library mode
+// 3. fuse getOpcode() with getOpcodeR() - only ptr difference
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -65,6 +66,7 @@ void putHelp()
 //
 int matchWild(uchar *pData, struct op *stOp, uchar **a_operbytes)
 {
+  // printf("-- matchWild()-ing\n");
   uint uiWildCount = 0;
   uint uiWildOffset = 0;
   uint uiCount = 0;
@@ -100,7 +102,6 @@ int matchWild(uchar *pData, struct op *stOp, uchar **a_operbytes)
 
   if(0 < uiWildCount)
   {
-    // printf("Wild card match\n");
     // save operand bytes
     *a_operbytes = malloc(MAX_OFFSET_SIZE);
     if(0 == *a_operbytes)
@@ -110,9 +111,11 @@ int matchWild(uchar *pData, struct op *stOp, uchar **a_operbytes)
   }
   else
   {
+    printf("regular no operbytes\n");
     *a_operbytes = 0;
   }
 
+  // printf("-- match with wild card!\n");
   return uiWildCount;
 }
 
@@ -150,6 +153,7 @@ void delStOp(struct op *a_stOp)
 // Iterates to see if current data ptr is at ret-equivalent instructions
 int getOpcode(uint uiOptype, uchar *pData, struct op** a_stOp)
 {
+  // printf("- getOpcode\n");
   uint i;
   int r;
   uchar *oper;
@@ -165,11 +169,13 @@ int getOpcode(uint uiOptype, uchar *pData, struct op** a_stOp)
       if(0 == memcmp(pData, opcodes[i].opbytes, opcodes[i].oplen))
       {
         bFound = true;
+        //printf("- *memcmp match\n");
       }
       // if memcmp failed, try using wild card compare
       else if(0 <= (r = matchWild(pData, &opcodes[i], &oper)) )
       {
           bFound = bWild = true;
+        //printf("- *wild card match\n");
       }
 
       // if opcode found, copy it
@@ -185,9 +191,11 @@ int getOpcode(uint uiOptype, uchar *pData, struct op** a_stOp)
         *a_stOp = stOp;
         return stOp->oplen;        
       }
+      
     }
   }
 
+  //printf("- getOpcode exit\n");
   // if none found, return 0
   a_stOp = 0;
   return 0;
@@ -199,8 +207,15 @@ int getOpcode(uint uiOptype, uchar *pData, struct op** a_stOp)
 // valid instruction opcodes
 int getOpcodeR(uint uiOptype, uchar *pData, struct op** a_stOp)
 {
+  //printf("- getOpcodeR start: %d---\n", uiOptype);
   uint i;
+  int r;
   uint uiLen;
+  uchar *oper = 0;
+  bool bFound = false;
+    bool bWild = false;
+
+  struct op *stOp;
 
   for(i = 0; i < opcount; i++)
   {
@@ -209,16 +224,53 @@ int getOpcodeR(uint uiOptype, uchar *pData, struct op** a_stOp)
       uiLen = opcodes[i].oplen;
       if(0 == memcmp(pData-(uiLen-1), opcodes[i].opbytes, uiLen))
       {
-        *a_stOp = copyStOp(&opcodes[i]);
-        if(0 > *a_stOp)
-          return -2;
-        return uiLen;
+        bFound = true;
+        //printf("opcodeR bFound = true\n");
+      }
+
+      // if it's wild card match
+      else if( 0 < (r = matchWild(pData-(uiLen-1), &opcodes[i], &oper)) )
+      {
+        bFound = bWild = true;
+        //printf("opcodeR bWild = true (r=%d)\n",r);
+      }
+
+      // if found, copy stOp
+      if(bFound)
+      {
+        stOp = copyStOp(&opcodes[i]);
+
+        // unfortunate initialization
+        stOp->operlen = 0;
+        stOp->operbytes = 0;
+
+        if(bWild)
+        {
+          stOp->operlen = r;
+          stOp->operbytes = oper;
+        }
+        *a_stOp = stOp;
+        // rintf("Found [%s] in getOpcodeR\n", stOp->opname);
+        return stOp->oplen;
       }
     }
   }
+  // printf("- getOpcodeR exit\n");
   a_stOp = 0;
   return 0;
 }
+
+// a function to determine if this opcode has wild card in it
+bool isWild(struct op* a_stOp)
+{
+  uint i;
+  for(i=0;i<a_stOp->oplen;i++)
+    if('*' == a_stOp->opbytes[i])
+      return true;
+  return false;
+}
+
+
 
 // getLibAddr();
 // Aux func to find address of libc lib
@@ -268,7 +320,7 @@ int findJug(uchar *pData, uint uiLen)
         if(getOpcodeR(OPTYPE_POP, pAddr-1, &stOpPrev))
         {
           pAddr -= stOpPrev->oplen;
-          printf("[%s] ", stOpPrev->opname);
+          //printf("([%s])\n ", stOpPrev->opname);
           delStOp(stOpPrev);
         }
         else if(getOpcodeR(OPTYPE_PUSH, pAddr-1, &stOpPrev))
