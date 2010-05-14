@@ -6,9 +6,10 @@
 /////////////////////////////////////////////////////////////////////////////
 
 //TODO
-// 1. custom byte search in library and in file
+// 1. custom byte search
 // 2. split searching mode to: file mode & library mode
 // 3. fuse getOpcode() with getOpcodeR() - only ptr difference
+// 4. ROP chunks, show only unique instruction
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -422,9 +423,15 @@ int findChunk()
       while(1)
       {
         // search for MOV
-        if(getOpcodeR(OPTYPE_MOV, pAddr-1, &stOpPrev)
-          || getOpcodeR(OPTYPE_XOR, pAddr-1, &stOpPrev)
-          || getOpcodeR(OPTYPE_ADD, pAddr-1, &stOpPrev))
+        if(getOpcodeR(OPTYPE_CALL, pAddr-1, &stOpPrev)
+          || getOpcodeR(OPTYPE_PUSH, pAddr-1, &stOpPrev)
+          || getOpcodeR(OPTYPE_POP, pAddr-1, &stOpPrev)
+          || getOpcodeR(OPTYPE_MOV, pAddr-1, &stOpPrev)
+          || getOpcodeR(OPTYPE_ADD, pAddr-1, &stOpPrev)
+          || getOpcodeR(OPTYPE_SUB, pAddr-1, &stOpPrev)
+          || getOpcodeR(OPTYPE_LEA, pAddr-1, &stOpPrev)
+          || getOpcodeR(OPTYPE_XOR, pAddr-1, &stOpPrev))
+          // || getOpcodeR(OPTYPE_POP, pAddr-1, &stOpPrev)
           // || getOpcodeR(OPTYPE_SUB, pAddr-1, &stOpPrev))
         {
           if(!bFound)

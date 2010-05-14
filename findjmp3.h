@@ -32,6 +32,7 @@
 #define OPTYPE_REG_EBP    0x1007
 
 #define MAX_OFFSET_SIZE 0x10
+
 struct op
 {
   uchar optype; // OPTYPE
