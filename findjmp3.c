@@ -10,6 +10,9 @@
 // 2. split searching mode to: file mode & library mode
 // 3. fuse getOpcode() with getOpcodeR() - only ptr difference
 // 4. ROP chunks, show only unique instruction
+// 5. libc process segment information and search only on valid segments
+// (check exec permission if possible)
+//
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -24,6 +27,8 @@
 #include "findjmp3.h"
 
 // returns cpu info
+// this one looks fanciest so comes on top
+// later to be used to detect CPU and use right opcode set
 void getCPUInfo(uint *uiCPUID, char *szCPUID)
 {
   uint b,c,d;
@@ -277,9 +282,17 @@ bool isWild(struct op* a_stOp)
 // Aux func to find address of libc lib
 int getLibAddr(struct dl_phdr_info *info, size_t size, void *data)
 {
+    int j;
+    printf("name=%s (%d segments)\n", info->dlpi_name,
+        info->dlpi_phnum);
+    for (j = 0; j < info->dlpi_phnum; j++)
+         printf("\t\t header %2d: address=%10p\n", j,
+             (void *) (info->dlpi_addr + info->dlpi_phdr[j].p_vaddr));
+
   if(strstr(info->dlpi_name, "libc"))
   {
     g_pLibAddr = (void*)info->dlpi_addr;
+    g_uiLibSize = info->dlpi_phdr->p_memsz;
     g_szLibPath = malloc(strlen(info->dlpi_name) + 1);
     strcpy(g_szLibPath, info->dlpi_name);
     return 1;
@@ -392,7 +405,9 @@ int findJmpCall(uchar *pData, uint uiLen)
 int findChunk()
 {
   uint uiCount = 0;
-  uint uiLen = LIBC_SIZE;
+//  uint uiLen = LIBC_SIZE;
+  uint uiLen = g_uiLibSize;
+  printf("Libsize: %d\n", g_uiLibSize);
   uint i;
 
   uchar* pAddr;
@@ -422,7 +437,7 @@ int findChunk()
       pAddr -= stOpRet->oplen;
       while(1)
       {
-        // search for MOV
+        // search for the chunks in front of ret
         if(getOpcodeR(OPTYPE_CALL, pAddr-1, &stOpPrev)
           || getOpcodeR(OPTYPE_PUSH, pAddr-1, &stOpPrev)
           || getOpcodeR(OPTYPE_POP, pAddr-1, &stOpPrev)
@@ -447,10 +462,6 @@ int findChunk()
         else
           break;
        }
-
-      //decrease ret size,
-      //then call getOpcodeR() for any kind of instruction
-      //match
 
       if(bFound)
         printf("[%s] @ %p\n", stOpRet->opname, pAddr);

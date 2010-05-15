@@ -58,7 +58,7 @@ struct dl_phdr_info
 //#include "opcodes_mips.h"
 
 #define HEAP_BASEADDR  0x8048000
-#define LIBC_SIZE 0x13E000
+#define LIBC_SIZE 0x100000
 
 /* Search modes */
 #define MODE_STACKJUG  0x1
@@ -90,5 +90,6 @@ uint opcount = sizeof(opcodes) / sizeof(struct op);
 
 uchar *g_pLibAddr;
 char *g_szLibPath;
+uint *g_uiLibSize;
 
 #endif
