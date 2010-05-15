@@ -43,6 +43,13 @@ struct op
   uint operlen; // operand length
 };
 
+struct memseg
+{
+  uchar *ptr;
+  uint size;
+  struct memseg *next;
+};
+
 /* couldn't find the right header file :/ */
 struct dl_phdr_info
 {
@@ -58,6 +65,7 @@ struct dl_phdr_info
 //#include "opcodes_mips.h"
 
 #define HEAP_BASEADDR  0x8048000
+#define MIN_SEG_SIZE 0x1000
 #define LIBC_SIZE 0x100000
 
 /* Search modes */
@@ -88,8 +96,12 @@ int findJmpCall(uchar *pData, uint uiLen);
 
 uint opcount = sizeof(opcodes) / sizeof(struct op);
 
-uchar *g_pLibAddr;
-char *g_szLibPath;
-uint *g_uiLibSize;
+// to be used with getLibAddr and dl_iterate_phdr
+uchar *g_pLibAddr = 0;
+char *g_szLibPath = 0;
+struct memseg *g_pLibSegList = 0;
+
+
+bool g_bDebug = false;
 
 #endif

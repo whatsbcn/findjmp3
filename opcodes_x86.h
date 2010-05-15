@@ -85,7 +85,6 @@ struct op opcodes[300] =
 
   /// RET: 2
   
-  { OPTYPE_RET, "\xc2", 1, "ret" },
   { OPTYPE_RET, "\xc3", 1, "ret" },
 
   /// MOV

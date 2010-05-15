@@ -5,7 +5,7 @@ findjmp3: findjmp3.h opcodes_x86.h findjmp3.c
 
 run:
 	cc -o test test.c
-	./findjmp3 -a test
+	./findjmp3 -a -d test
 
 debug:
 	cc -o test test.c

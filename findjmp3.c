@@ -282,19 +282,41 @@ bool isWild(struct op* a_stOp)
 // Aux func to find address of libc lib
 int getLibAddr(struct dl_phdr_info *info, size_t size, void *data)
 {
-    int j;
-    printf("name=%s (%d segments)\n", info->dlpi_name,
-        info->dlpi_phnum);
-    for (j = 0; j < info->dlpi_phnum; j++)
-         printf("\t\t header %2d: address=%10p\n", j,
-             (void *) (info->dlpi_addr + info->dlpi_phdr[j].p_vaddr));
+  uint j;
+  struct memseg *stMemSeg = g_pLibSegList;
 
   if(strstr(info->dlpi_name, "libc"))
   {
     g_pLibAddr = (void*)info->dlpi_addr;
-    g_uiLibSize = info->dlpi_phdr->p_memsz;
     g_szLibPath = malloc(strlen(info->dlpi_name) + 1);
     strcpy(g_szLibPath, info->dlpi_name);
+
+    for(j=0; j<info->dlpi_phnum; j++)
+    {
+      // lib segment size check
+      if(MIN_SEG_SIZE > info->dlpi_phdr[j].p_memsz)
+        continue;
+
+      if(0 == stMemSeg)
+      {
+        g_pLibSegList = malloc(sizeof(struct memseg));
+        memset(g_pLibSegList, 0, sizeof(struct memseg));
+        stMemSeg = g_pLibSegList;
+      }
+      else
+      {
+        stMemSeg->next = malloc(sizeof(struct memseg));
+        memset(stMemSeg->next, 0, sizeof(struct memseg));
+        stMemSeg = stMemSeg->next;
+        memset(stMemSeg, 0, sizeof(struct memseg));
+      }
+
+      //save segment addr and size
+      stMemSeg->ptr = g_pLibAddr + info->dlpi_phdr[j].p_vaddr;
+      stMemSeg->size = info->dlpi_phdr[j].p_memsz;
+
+    }
+
     return 1;
   }
   return 0;
@@ -402,36 +424,33 @@ int findJmpCall(uchar *pData, uint uiLen)
 }
 
 // Search c3 chunks for ROP
-int findChunk()
+int findChunk(uchar *pAddr, uint uiLen)
 {
   uint uiCount = 0;
-//  uint uiLen = LIBC_SIZE;
-  uint uiLen = g_uiLibSize;
-  printf("Libsize: %d\n", g_uiLibSize);
   uint i;
-
-  uchar* pAddr;
 
   bool bFound;
 
   struct op* stOpRet;
   struct op* stOpPrev;
 
-  if(0 > dl_iterate_phdr(getLibAddr, NULL))
-  {
-    printf("[-] Could not locate libc library!\n");
-    return 0;
-  }
+  struct memseg *stMemSeg;
+  struct memseg *stMemSegTmp;
 
-  pAddr = g_pLibAddr;
-
-  printf("[+] LIBC lib @ %p\n", g_pLibAddr);
-  printf("[+] LIBC path: %s\n", g_szLibPath);    
+  printf("[+] Segment: %p (0x%x)\n", pAddr, uiLen);
 
   for(i = 0; i < uiLen; i++)
   {
-    bFound = false;
     pAddr = g_pLibAddr + i;
+    if(pAddr+i > g_pLibSegList->ptr + g_pLibSegList->size)
+    {
+      // printf("something's wrong\n");
+      // printf("%p + %d\n", pAddr, i);
+      break;
+    }
+
+    bFound = false;
+
     if(getOpcode(OPTYPE_RET, pAddr+i, &stOpRet))
     {
       pAddr -= stOpRet->oplen;
@@ -471,6 +490,7 @@ int findChunk()
     }
 
   } // end of for
+
   return uiCount;
 }
 
@@ -495,6 +515,9 @@ int main(int argc, char *argv[])
   // memory
   uchar *pFileData = 0;
   //char **ppList = 0; <- where was i gon use it?
+
+  struct memseg *stMemSeg;
+  struct memseg *stMemSegTmp;
   
   // file
   FILE *fp = 0;
@@ -520,7 +543,7 @@ int main(int argc, char *argv[])
   printf("[+] CPU: %s (type:0x%x)\n", szCPUName, uiCPUID);
 
   //parse cmdline options
-  while((opt = getopt(argc,argv,"asjcr:h")) != -1)
+  while((opt = getopt(argc,argv,"asjcdr:h")) != -1)
   {
     switch(opt)
     {
@@ -544,6 +567,10 @@ int main(int argc, char *argv[])
 
       case 'a':
       mode |= MODE_STACKJUG | MODE_JMPCALL | MODE_CHUNKS;
+      break;
+
+      case 'd':
+      g_bDebug = true;
       break;
 
       case 'h':
@@ -627,7 +654,34 @@ int main(int argc, char *argv[])
   {
     printf("[+] Searching for chunks for ROP.. c3 c3 c3\n");
     printf("------------------------------------------\n");
-    findChunk();
+    if(0 > dl_iterate_phdr(getLibAddr, NULL))
+    {
+      printf("[-] Could not locate libc library!\n");
+    }
+    else
+    {
+
+      printf("[+] LIBC lib @ %p\n", g_pLibAddr);
+      printf("[+] LIBC path: %s\n", g_szLibPath);
+
+      stMemSeg = g_pLibSegList;
+      // iterate on lib segment to find chunks
+      while(stMemSeg)
+      {
+        findChunk(stMemSeg->ptr, stMemSeg->size);
+        stMemSeg = stMemSeg->next;
+      }
+
+      // free lib segment list
+      stMemSeg = g_pLibSegList;
+      while(stMemSeg)
+      {
+        stMemSegTmp = stMemSeg->next;
+        free(stMemSeg);
+        stMemSeg = stMemSegTmp;
+      }
+
+    }
     printf("------------------------------------------\n");
   }
 
