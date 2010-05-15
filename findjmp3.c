@@ -464,9 +464,9 @@ int findChunk(uchar *pAddr, uint uiLen)
           || getOpcodeR(OPTYPE_ADD, pAddr-1, &stOpPrev)
           || getOpcodeR(OPTYPE_SUB, pAddr-1, &stOpPrev)
           || getOpcodeR(OPTYPE_LEA, pAddr-1, &stOpPrev)
-          || getOpcodeR(OPTYPE_XOR, pAddr-1, &stOpPrev))
-          // || getOpcodeR(OPTYPE_POP, pAddr-1, &stOpPrev)
-          // || getOpcodeR(OPTYPE_SUB, pAddr-1, &stOpPrev))
+          || getOpcodeR(OPTYPE_XOR, pAddr-1, &stOpPrev)
+          || getOpcodeR(OPTYPE_CMP, pAddr-1, &stOpPrev)
+          || getOpcodeR(OPTYPE_TEST, pAddr-1, &stOpPrev))
         {
           if(!bFound)
           {

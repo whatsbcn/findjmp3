@@ -1,6 +1,9 @@
-/* findjmp3 - opcodes for intel x86 */
-/* justin suwnoo kim */
-/* t1g3r @t sapheads d.t org */
+/////////////////////////////////////////////////////////////////////////////
+//
+// findjmp3.c - justin sunwoo kim
+// t1g3r @t sapheads d.t org
+//
+/////////////////////////////////////////////////////////////////////////////
 
 #ifndef _FINDJMP3_OPCODES_X86_H_
 #define _FINDJMP3_OPCODES_X86_H_
@@ -129,7 +132,8 @@ struct op opcodes[300] =
   /// XOR
   { OPTYPE_XOR, "\x31\xed", 2, "xor ebp ebp" },
   { OPTYPE_XOR, "\x31\xc0", 2, "xor eax eax" },
-  { OPTYPE_XOR, "\x31\xf6", 2, "xor esi esi" }
+  { OPTYPE_XOR, "\x31\xf6", 2, "xor esi esi" },
+
 
   /// AND
 
@@ -139,13 +143,15 @@ struct op opcodes[300] =
   
 
   /// CMP
-  /*
-  { OPTYPE_, "", , "" },
-  { OPTYPE_, "", , "" },
-  { OPTYPE_, "", , "" },
-  { OPTYPE_, "", , "" },
-  { OPTYPE_, "", , "" },
-  */
+  { OPTYPE_CMP, "\x39\xd8", 2, "cmp ebx eax" },
+  { OPTYPE_CMP, "\x39\xc1", 2, "cmp eax ecx" },
+  { OPTYPE_CMP, "\x38\xc2", 2, "cmp al dl" },
+  { OPTYPE_CMP, "\x39\xfe", 2, "cmp edi esi" },
+
+
+  { OPTYPE_CMP, "\x3c*", 2, "cmp * al" },
+  { OPTYPE_CMP, "\x3d****", 5, "cmp **** al" },
+  { OPTYPE_CMP, "\x3b\x45*", 3, "cmp [](ebp) eax" }
 
   /// TEST
 

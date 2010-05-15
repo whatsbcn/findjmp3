@@ -21,6 +21,8 @@
 #define OPTYPE_SUB    0x8
 #define OPTYPE_LEA    0x9
 #define OPTYPE_XOR    0xa
+#define OPTYPE_CMP    0xb
+#define OPTYPE_TEST   0xc
 
 #define OPTYPE_REG_EAX    0x1000
 #define OPTYPE_REG_EBX    0x1001
