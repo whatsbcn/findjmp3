@@ -91,7 +91,14 @@ struct op opcodes[300] =
   { OPTYPE_MOV, "\x89\xe5", 2, "mov esp ebp" },
   { OPTYPE_MOV, "\x89\xe1", 2, "mov esp ecx" },
 
+  { OPTYPE_MOV, "\x89\xc7", 2, "mov eax edi" },
+  { OPTYPE_MOV, "\x89\xc2", 2, "mov eax edx" },
+  { OPTYPE_MOV, "\x89\xd0", 2, "mov edx eax" },
+  { OPTYPE_MOV, "\x89\xc6", 2, "mov eax esi" },
+
   { OPTYPE_MOV, "\x8b\x36", 2, "mov (esi) esi" },
+  { OPTYPE_MOV, "\x8b\x00", 2, "mov (eax) eax" },
+
 
   { OPTYPE_MOV, "\xbf****", 5, "mov [ ] edi" },
   { OPTYPE_MOV, "\xa1****", 5, "mov [ ] eax" },
@@ -101,7 +108,17 @@ struct op opcodes[300] =
   { OPTYPE_MOV, "\x89\x14\x24", 3, "mov edx (esp)" },
   { OPTYPE_MOV, "\x89\x04\x24", 3, "mov eax (esp)" },
 
+  { OPTYPE_MOV, "\xc6\x05*****", 7, "mov [] *[]" },
+  { OPTYPE_MOV, "\x89\x44\x24\x08", 4, "mov eax, 0x8(esp)" },
+  { OPTYPE_MOV, "\x8b\x45\x08", 3, "mov 0x8(ebp) eax" },
+  { OPTYPE_MOV, "\x8b\x40\x08", 3, "mov 0x8(eax) eax" },
+
   /// ADD
+  { OPTYPE_ADD, "\x01\xc0", 2, "add eax eax" },
+  { OPTYPE_ADD, "\x01\xd0", 2, "add edx eax" },
+  { OPTYPE_ADD, "\x83\xc0*", 3, "add [] eax" },
+  { OPTYPE_ADD, "\x81\xc3****", 6, "add [] ebx" },
+  { OPTYPE_ADD, "\x05****", 5, "add [] eax" },
 
   /// SUB
   { OPTYPE_SUB, "\x83\xec*", 3, "sub * esp" },
@@ -119,6 +136,19 @@ struct op opcodes[300] =
   /// NOT
 
   /// COND- JMP (jz, jnz, jae, jne, ..)
+  
+
+  /// CMP
+  /*
+  { OPTYPE_, "", , "" },
+  { OPTYPE_, "", , "" },
+  { OPTYPE_, "", , "" },
+  { OPTYPE_, "", , "" },
+  { OPTYPE_, "", , "" },
+  */
+
+  /// TEST
+
 
   /// LEA
 
