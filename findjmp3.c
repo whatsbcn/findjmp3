@@ -47,8 +47,8 @@ void putHelp()
   printf("[=]\t-f [file]: search file\n");
   printf("[=]\t-l [lib name]: search lib\n");
 
-  printf("[=]\t-c [bytes]: search custom bytes\n");
-  printf("[=]\t-r [reg name]: register specific\n");
+  //printf("[=]\t-c [bytes]: search custom bytes\n");
+  //printf("[=]\t-r [reg name]: register specific\n");
   printf("------------------------------------------\n");
   printf("[=] Usage (file search): ./findjmp3 -f [file]\n");
   printf("[=] Usage (lib search): ./findjmp3 -l [lib name]\n");
