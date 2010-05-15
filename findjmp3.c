@@ -8,7 +8,6 @@
 //TODO
 // 1. custom byte search
 // 2. split searching mode to: file mode & library mode
-// 3. fuse getOpcode() with getOpcodeR() - only ptr difference
 // 4. ROP chunks, show only unique instruction
 // 5. libc process segment information and search only on valid segments
 // (check exec permission if possible)
@@ -47,11 +46,11 @@ void getCPUInfo(uint *uiCPUID, char *szCPUID)
 void putHelp()
 {
   printf("[=] findjmp3.c - Help\n");
-  printf("[=]\t-s : Stack jugglers\n");
-  printf("[=]\t-j : Find jumps\n");
-  printf("[=]\t-c : Find chunks\n");
-  printf("[=]\t-a : All of the above\n");
-  printf("[=]\t-r [reg] : Register specific\n");
+  printf("[=]\t-f : search file\n");
+  printf("[=]\t-l : search lib\n");
+
+  printf("[=]\t-c : search custom bytes\n");
+  printf("[=]\t-r : register specific\n");
   printf("------------------------------------------\n");
   printf("[=] Usage: ./findjmp3 -s -j -r esp kernel32.dll\n");
   printf("[=] Usage: ./findjmp3 [target bin] -a -r esp\n");
@@ -277,7 +276,6 @@ bool isWild(struct op* a_stOp)
 }
 
 
-
 // getLibAddr();
 // Aux func to find address of libc lib
 int getLibAddr(struct dl_phdr_info *info, size_t size, void *data)
@@ -308,7 +306,6 @@ int getLibAddr(struct dl_phdr_info *info, size_t size, void *data)
         stMemSeg->next = malloc(sizeof(struct memseg));
         memset(stMemSeg->next, 0, sizeof(struct memseg));
         stMemSeg = stMemSeg->next;
-        memset(stMemSeg, 0, sizeof(struct memseg));
       }
 
       //save segment addr and size
@@ -510,11 +507,14 @@ int main(int argc, char *argv[])
   // strings
   char *szTargetFilePath = 0;
   char *szTargetReg = 0;
+  char *szLibName = 0;
+  uchar *pCustomBytes = 0;
+  char *szRegSpecific = 0;
+
   char szCPUName[13] = {0,};
-  
+
   // memory
   uchar *pFileData = 0;
-  //char **ppList = 0; <- where was i gon use it?
 
   struct memseg *stMemSeg;
   struct memseg *stMemSegTmp;
@@ -543,30 +543,28 @@ int main(int argc, char *argv[])
   printf("[+] CPU: %s (type:0x%x)\n", szCPUName, uiCPUID);
 
   //parse cmdline options
-  while((opt = getopt(argc,argv,"asjcdr:h")) != -1)
+  while((opt = getopt(argc,argv,"f:l:c:r:h")) != -1)
   {
     switch(opt)
     {
-      case 's':
-      mode |= MODE_STACKJUG;
+      case 'f':
+      if(optarg)
+        szTargetFilePath = optarg;
       break;
 
-      case 'j':
-      mode |= MODE_JMPCALL;
-      break;
-
-      case 'r':
-      mode |= MODE_REGS;
-      if(0 != optarg)
-        szTargetReg = optarg;
+      case 'l':
+      if(optarg)
+        szLibName = optarg;
       break;
 
       case 'c':
-      mode |= MODE_CHUNKS;
+      if(optarg)
+        pCustomBytes = optarg;
       break;
 
-      case 'a':
-      mode |= MODE_STACKJUG | MODE_JMPCALL | MODE_CHUNKS;
+      case 'r':
+      if(optarg)
+        szRegSpecific = optarg;
       break;
 
       case 'd':
@@ -580,10 +578,8 @@ int main(int argc, char *argv[])
     }
   }
 
-  // if there is any more arg left, take it as file name
-  if(optind < argc)
-    szTargetFilePath = argv[optind];
-  else
+  // file check
+  if(0 == szTargetFilePath)
   {
 	  printf("[-] Error: File name not specifid.\n");
 	  return -2;
@@ -624,34 +620,25 @@ int main(int argc, char *argv[])
   printf("------------------------------------------\n");
 
   //STACK JUGGLERS
-  if(mode & MODE_STACKJUG)
-  {
     printf("[+] Searching for stack jugglers.. (pop,add,ret)\n");
     printf("------------------------------------------\n");
     findJug(pFileData, uiFileSize);
     printf("------------------------------------------\n");
-  }
 
   //JMP & CALL s
-  if(mode & MODE_JMPCALL)
-  {
     printf("[+] Searching for jmp & call..\n");
     printf("------------------------------------------\n");
     findJmpCall(pFileData, uiFileSize);
     printf("------------------------------------------\n");
-  }
 
+/*
   //Register-specific instructions
-  if(mode & MODE_REGS)
-  {
     printf("[+] Searching for '%s' instructions..\n", szTargetReg);
     printf("------------------------------------------\n");
     printf("------------------------------------------\n");
-  }
+*/
 
   //Chunks for ROP
-  if(mode & MODE_CHUNKS)
-  {
     printf("[+] Searching for chunks for ROP.. c3 c3 c3\n");
     printf("------------------------------------------\n");
     if(0 > dl_iterate_phdr(getLibAddr, NULL))
@@ -683,7 +670,6 @@ int main(int argc, char *argv[])
 
     }
     printf("------------------------------------------\n");
-  }
 
   printf("[v] Thank you, come again! uh-heung! r0ar!\n");	 
   return 0;

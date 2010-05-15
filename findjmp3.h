@@ -69,12 +69,6 @@ struct dl_phdr_info
 #define HEAP_BASEADDR  0x8048000
 #define MIN_SEG_SIZE 0x1000
 #define LIBC_SIZE 0x100000
-
-/* Search modes */
-#define MODE_STACKJUG  0x1
-#define MODE_JMPCALL   0x2
-#define MODE_REGS      0x4
-#define MODE_CHUNKS    0x8
 ;
 
 /* Mini-helper functions */
@@ -94,7 +88,6 @@ int findJug(uchar *pData, uint uiLen);
 int findJmpCall(uchar *pData, uint uiLen);
 int findReg(uchar *pData, uint uiLen);
 int findChunk();
-int findJmpCall(uchar *pData, uint uiLen);
 
 uint opcount = sizeof(opcodes) / sizeof(struct op);
 
@@ -102,7 +95,6 @@ uint opcount = sizeof(opcodes) / sizeof(struct op);
 uchar *g_pLibAddr = 0;
 char *g_szLibPath = 0;
 struct memseg *g_pLibSegList = 0;
-
 
 bool g_bDebug = false;
 
