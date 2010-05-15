@@ -283,7 +283,7 @@ int getLibAddr(struct dl_phdr_info *info, size_t size, void *data)
   uint j;
   struct memseg *stMemSeg = g_pLibSegList;
 
-  if(strstr(info->dlpi_name, "libc"))
+  if(strstr(info->dlpi_name, g_szLibName))
   {
     g_pLibAddr = (void*)info->dlpi_addr;
     g_szLibPath = malloc(strlen(info->dlpi_name) + 1);
@@ -311,9 +311,7 @@ int getLibAddr(struct dl_phdr_info *info, size_t size, void *data)
       //save segment addr and size
       stMemSeg->ptr = g_pLibAddr + info->dlpi_phdr[j].p_vaddr;
       stMemSeg->size = info->dlpi_phdr[j].p_memsz;
-
     }
-
     return 1;
   }
   return 0;
@@ -578,54 +576,50 @@ int main(int argc, char *argv[])
     }
   }
 
-  // file check
-  if(0 == szTargetFilePath)
+  // FILE MODE SEARCH
+  if(szTargetFilePath)
   {
-	  printf("[-] Error: File name not specifid.\n");
-	  return -2;
-  }
+    printf("[+] Target file: %s\n", szTargetFilePath);
 
-  printf("[+] Target file: %s\n", szTargetFilePath);
+    // get file stat
+    memset(&stFile, 0, sizeof(struct stat));
 
-  // get file stat
-  memset(&stFile, 0, sizeof(struct stat));
+    r = stat(szTargetFilePath, &stFile);
+    if(0 != r)
+      return -3;
 
-  r = stat(szTargetFilePath, &stFile);
-  if(0 != r)
-    return -3;
-
-  // store file size
-  uiFileSize = stFile.st_size;
+    // store file size
+    uiFileSize = stFile.st_size;
     
-  // open file
-  fp = fopen(szTargetFilePath, "r+");
-  if(0 == fp)
-    return -4;
+    // open file
+    fp = fopen(szTargetFilePath, "r+");
+    if(0 == fp)
+      return -4;
     
-  // alloc file mem
-  pFileData = malloc(uiFileSize);
-  if(0 == pFileData)
-    // low mem
-    return -5;
+    // alloc file mem
+    pFileData = malloc(uiFileSize);
+    if(0 == pFileData)
+      // low mem
+      return -5;
 
-  // read in file
-  r = fread(pFileData, uiFileSize, 1, fp);
-  if(0 == r)
-    // if file data none read
-    return -6;
+    // read in file
+    r = fread(pFileData, uiFileSize, 1, fp);
+    if(0 == r)
+      // if file data none read
+      return -6;
   
-  printf("[+] File size: %d bytes\n", uiFileSize);
+    printf("[+] File size: %d bytes\n", uiFileSize);
 
-  //printf("[+] Mode: 0x%x\n", mode);
-  printf("------------------------------------------\n");
+    //printf("[+] Mode: 0x%x\n", mode);
+    printf("------------------------------------------\n");
 
-  //STACK JUGGLERS
+    //STACK JUGGLERS
     printf("[+] Searching for stack jugglers.. (pop,add,ret)\n");
     printf("------------------------------------------\n");
     findJug(pFileData, uiFileSize);
     printf("------------------------------------------\n");
 
-  //JMP & CALL s
+    //JMP & CALL s
     printf("[+] Searching for jmp & call..\n");
     printf("------------------------------------------\n");
     findJmpCall(pFileData, uiFileSize);
@@ -637,8 +631,14 @@ int main(int argc, char *argv[])
     printf("------------------------------------------\n");
     printf("------------------------------------------\n");
 */
+  }
 
-  //Chunks for ROP
+  // LIB SEARCH MODE
+  if(szLibName)
+  {
+    g_szLibName = szLibName;
+
+    //Chunks for ROP
     printf("[+] Searching for chunks for ROP.. c3 c3 c3\n");
     printf("------------------------------------------\n");
     if(0 > dl_iterate_phdr(getLibAddr, NULL))
@@ -648,6 +648,7 @@ int main(int argc, char *argv[])
     else
     {
 
+      if(g_pLibAddr)
       printf("[+] LIBC lib @ %p\n", g_pLibAddr);
       printf("[+] LIBC path: %s\n", g_szLibPath);
 
@@ -670,6 +671,7 @@ int main(int argc, char *argv[])
 
     }
     printf("------------------------------------------\n");
+  }
 
   printf("[v] Thank you, come again! uh-heung! r0ar!\n");	 
   return 0;

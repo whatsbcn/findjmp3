@@ -8,7 +8,9 @@
 #ifndef _FINDJMP3_H_
 #define _FINDJMP3_H_
 
-#include "typedefs.h"
+typedef enum{false=0,true=1} bool;
+typedef unsigned int uint;
+typedef unsigned char uchar;
 
 /* Opcode Type */
 #define OPTYPE_JMP    0x1
@@ -94,7 +96,10 @@ uint opcount = sizeof(opcodes) / sizeof(struct op);
 // to be used with getLibAddr and dl_iterate_phdr
 uchar *g_pLibAddr = 0;
 char *g_szLibPath = 0;
+char *g_szLibName = 0;
+
 struct memseg *g_pLibSegList = 0;
+
 
 bool g_bDebug = false;
 
