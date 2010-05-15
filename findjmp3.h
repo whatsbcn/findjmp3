@@ -26,6 +26,7 @@ typedef unsigned char uchar;
 #define OPTYPE_CMP    0xb
 #define OPTYPE_TEST   0xc
 
+/* Opcode Type - register specific */
 #define OPTYPE_REG_EAX    0x1000
 #define OPTYPE_REG_EBX    0x1001
 #define OPTYPE_REG_ECX    0x1002
@@ -35,8 +36,10 @@ typedef unsigned char uchar;
 #define OPTYPE_REG_ESP    0x1006
 #define OPTYPE_REG_EBP    0x1007
 
+/* Operand max buffer size */
 #define MAX_OFFSET_SIZE 0x10
 
+/* Opcode struct */
 struct op
 {
   uchar optype; // OPTYPE
@@ -47,6 +50,7 @@ struct op
   uint operlen; // operand length
 };
 
+/* Library memory segment struct */
 struct memseg
 {
   uchar *ptr;
@@ -68,6 +72,7 @@ struct dl_phdr_info
 //#include "opcodes_arm7.h"
 //#include "opcodes_mips.h"
 
+// linux heap base address
 #define HEAP_BASEADDR  0x8048000
 #define MIN_SEG_SIZE 0x1000
 #define LIBC_SIZE 0x100000
@@ -99,7 +104,6 @@ char *g_szLibPath = 0;
 char *g_szLibName = 0;
 
 struct memseg *g_pLibSegList = 0;
-
 
 bool g_bDebug = false;
 

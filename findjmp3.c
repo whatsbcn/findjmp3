@@ -7,10 +7,9 @@
 
 //TODO
 // 1. custom byte search
-// 2. split searching mode to: file mode & library mode
-// 4. ROP chunks, show only unique instruction
-// 5. libc process segment information and search only on valid segments
-// (check exec permission if possible)
+// 2. ROP chunks, show only unique instruction
+// 3. libc process segment information and search only on valid segments
+//    (check exec permission if possible)
 //
 
 #include <stdio.h>
@@ -25,8 +24,7 @@
 
 #include "findjmp3.h"
 
-// returns cpu info
-// this one looks fanciest so comes on top
+// returns cpu info,
 // later to be used to detect CPU and use right opcode set
 void getCPUInfo(uint *uiCPUID, char *szCPUID)
 {
@@ -34,7 +32,7 @@ void getCPUInfo(uint *uiCPUID, char *szCPUID)
 
   __asm__ __volatile__(
     "mov $0, %%eax\n\t"
-	  "cpuid\n\t"
+    "cpuid\n\t"
     :"=a"(*uiCPUID), "=b"(b), "=c"(c), "=d"(d));
 
   sprintf(szCPUID, "%c%c%c%c%c%c%c%c%c%c%c%c",
@@ -46,14 +44,16 @@ void getCPUInfo(uint *uiCPUID, char *szCPUID)
 void putHelp()
 {
   printf("[=] findjmp3.c - Help\n");
-  printf("[=]\t-f : search file\n");
-  printf("[=]\t-l : search lib\n");
+  printf("[=]\t-f [file]: search file\n");
+  printf("[=]\t-l [lib name]: search lib\n");
 
-  printf("[=]\t-c : search custom bytes\n");
-  printf("[=]\t-r : register specific\n");
+  printf("[=]\t-c [bytes]: search custom bytes\n");
+  printf("[=]\t-r [reg name]: register specific\n");
   printf("------------------------------------------\n");
-  printf("[=] Usage: ./findjmp3 -s -j -r esp kernel32.dll\n");
-  printf("[=] Usage: ./findjmp3 [target bin] -a -r esp\n");
+  printf("[=] Usage (file search): ./findjmp3 -f [file]\n");
+  printf("[=] Usage (lib search): ./findjmp3 -l [lib name]\n");
+  //printf("[=] Usage (custom search): ./findjmp3 -f [file] -c [chars]\n");
+  //printf("[=] Usage (reg search): ./findjmp3 -f [file] -r [reg]\n");
 }
 
 /* Mini-helper functions */
@@ -125,8 +125,8 @@ int matchWild(uchar *pData, struct op *stOp, uchar **a_operbytes)
 }
 
 // partial copy
-// opbytes,opname,.. stays same (same ptr)
-// but operbytes will be 
+// opbytes, opname,.. stays same (same ptr)
+// but operbytes will be diff
 struct op* copyStOp(struct op *a_stOp)
 {
   uint uiSize = sizeof(struct op);
@@ -140,6 +140,7 @@ struct op* copyStOp(struct op *a_stOp)
   return stOp;
 }
 
+// free
 void delStOp(struct op *a_stOp)
 {
   if(0 != a_stOp)
@@ -200,7 +201,6 @@ int getOpcode(uint uiOptype, uchar *pData, struct op** a_stOp)
     }
   }
 
-  //printf("- getOpcode exit\n");
   // if none found, return 0
   a_stOp = 0;
   return 0;
@@ -212,7 +212,6 @@ int getOpcode(uint uiOptype, uchar *pData, struct op** a_stOp)
 // valid instruction opcodes
 int getOpcodeR(uint uiOptype, uchar *pData, struct op** a_stOp)
 {
-  //printf("- getOpcodeR start: %d---\n", uiOptype);
   uint i;
   int r;
   uint uiLen;
@@ -230,14 +229,12 @@ int getOpcodeR(uint uiOptype, uchar *pData, struct op** a_stOp)
       if(0 == memcmp(pData-(uiLen-1), opcodes[i].opbytes, uiLen))
       {
         bFound = true;
-        //printf("opcodeR bFound = true\n");
       }
 
       // if it's wild card match
       else if( 0 < (r = matchWild(pData-(uiLen-1), &opcodes[i], &oper)) )
       {
         bFound = bWild = true;
-        //printf("opcodeR bWild = true (r=%d)\n",r);
       }
 
       // if found, copy stOp
@@ -255,12 +252,12 @@ int getOpcodeR(uint uiOptype, uchar *pData, struct op** a_stOp)
           stOp->operbytes = oper;
         }
         *a_stOp = stOp;
-        // rintf("Found [%s] in getOpcodeR\n", stOp->opname);
+
         return stOp->oplen;
       }
     }
   }
-  // printf("- getOpcodeR exit\n");
+
   a_stOp = 0;
   return 0;
 }
@@ -341,7 +338,6 @@ int findJug(uchar *pData, uint uiLen)
     {
       // save the addr for being ret
       pAddr = pData + i;
-      //printf("[*] %p: ", HEAP_BASEADDR + i);
 
       printf(" - ");
 
@@ -532,11 +528,6 @@ int main(int argc, char *argv[])
 	  return -1;
   }
 
-  //printf("[+] Num of opcodes: jmp=%d, call=%d, push=%d, pop=%d, ret=%d\n",
-  //  g_jmp_count, g_call_count, g_push_count, g_pop_count, g_ret_count);
-
-  //printf("[+] Num of opcodes registered: %d\n", opcount);
-  
   getCPUInfo(&uiCPUID, (char*)&szCPUName);
   printf("[+] CPU: %s (type:0x%x)\n", szCPUName, uiCPUID);
 
@@ -625,12 +616,13 @@ int main(int argc, char *argv[])
     findJmpCall(pFileData, uiFileSize);
     printf("------------------------------------------\n");
 
-/*
-  //Register-specific instructions
+    /*
+    //Register-specific instructions
     printf("[+] Searching for '%s' instructions..\n", szTargetReg);
     printf("------------------------------------------\n");
     printf("------------------------------------------\n");
-*/
+    */
+    fclose(fp);
   }
 
   // LIB SEARCH MODE
